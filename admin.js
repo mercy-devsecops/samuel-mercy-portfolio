@@ -87,6 +87,11 @@
     }[tag] || tag));
   }
 
+  function openModal(html) {
+    modalDialog.innerHTML = html;
+    modalBackdrop.style.display = 'flex';
+  }
+
   function closeModal() {
     modalBackdrop.style.display = 'none';
     modalDialog.innerHTML = '';
