@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Samuel Mercy Oluwatobi — Luxury Interactive Digital Book Portfolio</title>
+  <meta name="description" content="Personal interactive luxury digital book portfolio of Samuel Mercy Oluwatobi. Cybersecurity, Automation, Systems Architecture, and Software Engineering.">
+  
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-cinematic-night">
+
+  <!-- SVG Master Filter and Gradient Definitions -->
+  <svg width="0" height="0" class="svg-defs" aria-hidden="true">
+    <defs>
+      <!-- Master Metallic Gold Foil Linear Gradient -->
+      <linearGradient id="masterGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fff8db" />
+        <stop offset="25%" stop-color="#f5dc94" />
+        <stop offset="50%" stop-color="#d4af37" />
+        <stop offset="78%" stop-color="#aa7c11" />
+        <stop offset="100%" stop-color="#5a3d00" />
+      </linearGradient>
+
+      <!-- Soft Antique Gold Gradient -->
+      <linearGradient id="antiqueGoldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#ebd8a4" />
+        <stop offset="50%" stop-color="#c99e32" />
+        <stop offset="100%" stop-color="#805b10" />
+      </linearGradient>
+
+      <!-- Metallic Antique Brass Ring Gradient -->
+      <linearGradient id="brassRingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4e330a" />
+        <stop offset="20%" stop-color="#9a752e" />
+        <stop offset="50%" stop-color="#f6df94" />
+        <stop offset="75%" stop-color="#ab8231" />
+        <stop offset="100%" stop-color="#3d2405" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- Ambient Cinematic Environment Background -->
+  <div class="cinematic-stage-bg" aria-hidden="true">
+    <div class="ambient-glow glow-top-right"></div>
+    <div class="ambient-glow glow-top-left"></div>
+    <div class="ambient-glow glow-center"></div>
+    <div class="background-decor decor-left"></div>
+    <div class="background-decor decor-right"></div>
+    <div class="tabletop-plane">
+      <div class="tabletop-gold-pool"></div>
+      <div class="tabletop-sheen"></div>
+    </div>
+    <div class="cinematic-vignette"></div>
+  </div>
+
+  <!-- Mobile Top Header Bar: Clean single header with Hamburger on left and SAMUEL on right -->
+  <header class="mobile-header" role="banner">
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Open Navigation Menu" aria-expanded="false" aria-controls="navSidebar">
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+      <span class="hamburger-bar"></span>
+    </button>
+    <div class="mobile-brand">SAMUEL</div>
+  </header>
+
+  <!-- Main Composition Stage -->
+  <div class="composition-stage">
+
+    <!-- Floating Navigation Sidebar (Desktop beside book / Mobile off-canvas drawer) -->
+    <aside class="navigation-sidebar" id="navSidebar" role="navigation" aria-label="Portfolio Sections Navigation">
+      <!-- 4-pointed Golden Star Accent at top apex of sidebar frame -->
+      <div class="sidebar-star-accent" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0L14.4 9.6L24 12L14.4 14.4L12 24L9.6 14.4L0 12L9.6 9.6L12 0Z"/>
+        </svg>
+      </div>
+
+      <!-- Navigation Item List: 8 Exact Required Sections -->
+      <ul class="nav-item-list" role="menubar">
+        <li class="nav-li" role="none">
+          <button class="nav-item-btn active" data-section-id="home" role="menuitem" aria-current="page">
+            <span class="nav-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </span>
+            <span class="nav-label-text">HOME</span>
+          </button>
+        </li>
+        <li class="nav-li" role="none">
+          <button class="nav-item-btn" data-section-id="about" role="menuitem">
+            <span class="nav-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <span class="nav-label-text">ABOUT ME</span>
+          </button>
+        </li>
+        <li class="nav-li" role="none">
+          <button class="nav-item-btn" data-section-id="skills" role="menuitem">
+            <span class="nav-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+              </svg>
+            </span>
+            <span class="nav-label-text">SKILLS</span>
+          </button>
+        </li>
+        <li class="nav-li" role="none">
+          <button class="nav-item-btn" data-section-id="projects" role="menuitem">
+            <span class="nav-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+            </span>
+            <span class="nav-label-text">PROJECTS</span>
+          </button>
+        </li>
+        <li class="nav-li" role="none">
+          <button class="nav-item-btn" data-section-id="certificates" role="menuitem">
+            <span class="nav-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="7"/>
+                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+              </svg>
+            </span>
+            <span class="nav-label-text">CERTIFICATES</span>
+          </button>
+        </li>
+        <li class="nav-li" role="none">
+          <button class="nav-item-btn" data-section-id="education" role="menuitem">
+            <span class="nav-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+            </span>
+            <span class="nav-label-text">EDUCATION</span>
+          </button>
+        </li>
+        <li class="nav-li" role="none">
+          <button class="nav-item-btn" data-section-id="journey" role="menuitem">
+            <span class="nav-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+              </svg>
+            </span>
+            <span class="nav-label-text">JOURNEY</span>
+          </button>
+        </li>
+        <li class="nav-li" role="none">
+          <button class="nav-item-btn" data-section-id="contact" role="menuitem">
+            <span class="nav-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </span>
+            <span class="nav-label-text">CONTACT</span>
+          </button>
+        </li>
+      </ul>
+
+      <!-- Bottom Social Dock Icons -->
+      <div class="sidebar-social-dock">
+        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="social-dock-btn" aria-label="LinkedIn Profile">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+          </svg>
+        </a>
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="social-dock-btn" aria-label="GitHub Profile">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+        </a>
+        <a href="mailto:contact@samuelmercy.com" class="social-dock-btn" aria-label="Email Contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="5" width="18" height="14" rx="2"/>
+            <polyline points="3 7 12 13 21 7"/>
+          </svg>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Mobile Drawer Overlay Backdrop -->
+    <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+
+    <!-- Left Navigation Arrow Button (<) -->
+    <button class="nav-flipper-arrow arrow-left" id="arrowPrev" aria-label="Turn Page Backward" title="Previous Page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+
+    <!-- Center Book Display Area -->
+    <main class="book-stage-area" id="bookStageArea">
+
+      <!-- Tabletop Drop Shadow beneath Book -->
+      <div class="book-cast-shadow" aria-hidden="true"></div>
+
+      <!-- The Physical Book Assembly (Switches between State Closed & State Open) -->
+      <div class="book-volume-assembly state-closed" id="bookVolumeAssembly" role="region" aria-label="Interactive Digital Book">
+
+        <!-- ============================================================= -->
+        <!-- PART A: CLOSED BOOK STATE (APPROVED MASTER COVER - HOME)      -->
+        <!-- ============================================================= -->
+        <div class="closed-book-structure" id="closedBookStructure" aria-label="Book Cover: Samuel Mercy Oluwatobi Digital Portfolio">
+          
+          <!-- Cylindrical Ribbed Book Spine on Left -->
+          <aside class="book-spine" aria-hidden="true">
+            <div class="spine-cylinder-lighting"></div>
+            
+            <!-- 3 Horizontal Raised Gold-Edged Ribs -->
+            <div class="spine-ribs-cluster">
+              <div class="spine-rib"></div>
+              <div class="spine-rib"></div>
+              <div class="spine-rib"></div>
+            </div>
+
+            <!-- Gold Spine Lettering: Rotated 90deg clockwise along spine -->
+            <div class="spine-vertical-text-track">
+              <span class="spine-title-rotated">SAMUEL MERCY OLUWATOBI</span>
+            </div>
+
+            <!-- Bottom Monogram Cell: [SMO] and + symbol -->
+            <div class="spine-monogram-emblem">
+              <div class="spine-smo-cell">SMO</div>
+              <div class="spine-symbol-plus">+</div>
+            </div>
+
+            <!-- Crimson Silk Ribbon Bookmark hanging from bottom -->
+            <div class="spine-crimson-ribbon"></div>
+          </aside>
+
+          <!-- Book Cover Leaf (Face of Closed Book) -->
+          <article class="book-cover-face" id="bookCoverFace" title="Click to open book">
+            <!-- Burgundy Leather Grain Texture & Specular Glare -->
+            <div class="leather-grain-skin" aria-hidden="true"></div>
+            <div class="leather-crease-groove" aria-hidden="true"></div>
+            <div class="leather-specular-glow" aria-hidden="true"></div>
+
+            <!-- Double Outer Gold Border Frame with 4 Ornate Victorian Corner Flourishes -->
+            <div class="gold-border-outer">
+              <div class="gold-border-inner">
+
+                <!-- Top-Left Corner Flourish -->
+                <svg class="corner-scroll corner-tl" viewBox="0 0 90 90" fill="none" aria-hidden="true">
+                  <path d="M4 86 V 32 C 4 16 16 4 32 4 H 86" stroke="url(#masterGoldGradient)" stroke-width="1.8"/>
+                  <path d="M12 78 V 34 C 12 22 22 12 34 12 H 78" stroke="url(#masterGoldGradient)" stroke-width="1.1"/>
+                  <path d="M4 4 C 26 4, 42 20, 42 42 C 42 28, 30 16, 16 16 C 6 16, 6 28, 16 28 C 24 28, 30 22, 30 16" stroke="url(#masterGoldGradient)" stroke-width="1.4"/>
+                  <path d="M16 4 C 16 14, 26 24, 38 24" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                  <path d="M4 16 C 14 16, 24 26, 24 38" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                  <circle cx="22" cy="22" r="3" fill="url(#masterGoldGradient)"/>
+                  <circle cx="42" cy="4" r="2" fill="url(#masterGoldGradient)"/>
+                  <circle cx="4" cy="42" r="2" fill="url(#masterGoldGradient)"/>
+                </svg>
+
+                <!-- Top-Right Corner Flourish -->
+                <svg class="corner-scroll corner-tr" viewBox="0 0 90 90" fill="none" aria-hidden="true">
+                  <path d="M4 86 V 32 C 4 16 16 4 32 4 H 86" stroke="url(#masterGoldGradient)" stroke-width="1.8"/>
+                  <path d="M12 78 V 34 C 12 22 22 12 34 12 H 78" stroke="url(#masterGoldGradient)" stroke-width="1.1"/>
+                  <path d="M4 4 C 26 4, 42 20, 42 42 C 42 28, 30 16, 16 16 C 6 16, 6 28, 16 28 C 24 28, 30 22, 30 16" stroke="url(#masterGoldGradient)" stroke-width="1.4"/>
+                  <path d="M16 4 C 16 14, 26 24, 38 24" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                  <path d="M4 16 C 14 16, 24 26, 24 38" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                  <circle cx="22" cy="22" r="3" fill="url(#masterGoldGradient)"/>
+                  <circle cx="42" cy="4" r="2" fill="url(#masterGoldGradient)"/>
+                  <circle cx="4" cy="42" r="2" fill="url(#masterGoldGradient)"/>
+                </svg>
+
+                <!-- Bottom-Left Corner Flourish -->
+                <svg class="corner-scroll corner-bl" viewBox="0 0 90 90" fill="none" aria-hidden="true">
+                  <path d="M4 86 V 32 C 4 16 16 4 32 4 H 86" stroke="url(#masterGoldGradient)" stroke-width="1.8"/>
+                  <path d="M12 78 V 34 C 12 22 22 12 34 12 H 78" stroke="url(#masterGoldGradient)" stroke-width="1.1"/>
+                  <path d="M4 4 C 26 4, 42 20, 42 42 C 42 28, 30 16, 16 16 C 6 16, 6 28, 16 28 C 24 28, 30 22, 30 16" stroke="url(#masterGoldGradient)" stroke-width="1.4"/>
+                  <path d="M16 4 C 16 14, 26 24, 38 24" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                  <path d="M4 16 C 14 16, 24 26, 24 38" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                  <circle cx="22" cy="22" r="3" fill="url(#masterGoldGradient)"/>
+                  <circle cx="42" cy="4" r="2" fill="url(#masterGoldGradient)"/>
+                  <circle cx="4" cy="42" r="2" fill="url(#masterGoldGradient)"/>
+                </svg>
+
+                <!-- Bottom-Right Corner Flourish -->
+                <svg class="corner-scroll corner-br" viewBox="0 0 90 90" fill="none" aria-hidden="true">
+                  <path d="M4 86 V 32 C 4 16 16 4 32 4 H 86" stroke="url(#masterGoldGradient)" stroke-width="1.8"/>
+                  <path d="M12 78 V 34 C 12 22 22 12 34 12 H 78" stroke="url(#masterGoldGradient)" stroke-width="1.1"/>
+                  <path d="M4 4 C 26 4, 42 20, 42 42 C 42 28, 30 16, 16 16 C 6 16, 6 28, 16 28 C 24 28, 30 22, 30 16" stroke="url(#masterGoldGradient)" stroke-width="1.4"/>
+                  <path d="M16 4 C 16 14, 26 24, 38 24" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                  <path d="M4 16 C 14 16, 24 26, 24 38" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                  <circle cx="22" cy="22" r="3" fill="url(#masterGoldGradient)"/>
+                  <circle cx="42" cy="4" r="2" fill="url(#masterGoldGradient)"/>
+                  <circle cx="4" cy="42" r="2" fill="url(#masterGoldGradient)"/>
+                </svg>
+
+                <!-- Cover Content Stack: Distributed across full vertical height -->
+                <div class="cover-layout-content">
+
+                  <!-- 1. Top Monogram Box: [ SMO ] -->
+                  <div class="cover-monogram-cell">
+                    <span class="smo-badge-text">SMO</span>
+                  </div>
+
+                  <!-- 2. Subtitle: DIGITAL PORTFOLIO with diamond accent gems -->
+                  <div class="cover-digital-portfolio-title">
+                    <span class="sub-title-text">DIGITAL PORTFOLIO</span>
+                  </div>
+
+                  <!-- Upper Gold Ornamental Divider with Diamond Accent -->
+                  <div class="gold-ornament-divider divider-upper" aria-hidden="true">
+                    <span class="flourish-bar left-bar"></span>
+                    <span class="flourish-gem">
+                      <svg viewBox="0 0 32 16" fill="currentColor">
+                        <circle cx="4" cy="8" r="1.5"/>
+                        <polygon points="16,2 20,8 16,14 12,8"/>
+                        <circle cx="28" cy="8" r="1.5"/>
+                      </svg>
+                    </span>
+                    <span class="flourish-bar right-bar"></span>
+                  </div>
+
+                  <!-- 3. Primary Hero Owner Name: SAMUEL MERCY OLUWATOBI in Embossed Beveled Gold -->
+                  <div class="cover-hero-name">
+                    <span class="name-tier tier-samuel">SAMUEL</span>
+                    <span class="name-tier tier-mercy">MERCY</span>
+                    <span class="name-tier tier-oluwatobi">OLUWATOBI</span>
+                  </div>
+
+                  <!-- 4. Disciplines Tagline on Single Crisp Line -->
+                  <div class="cover-tagline-strip">
+                    <span>BUILD</span>
+                    <span class="tagline-dot">•</span>
+                    <span>AUTOMATE</span>
+                    <span class="tagline-dot">•</span>
+                    <span>SECURE</span>
+                    <span class="tagline-dot">•</span>
+                    <span>DEPLOY</span>
+                  </div>
+
+                  <!-- 5. Cybersecurity Vector Shield Emblem with Code Brackets and Padlock -->
+                  <div class="cover-shield-emblem-wrap">
+                    <svg class="shield-vector" viewBox="0 0 100 120" fill="none" aria-hidden="true">
+                      <!-- Outer Shield Outline -->
+                      <path d="M50 8 L88 24 V64 C88 92 50 114 50 114 C50 114 12 92 12 64 V24 Z" stroke="url(#masterGoldGradient)" stroke-width="2.6" fill="rgba(30, 8, 12, 0.72)"/>
+                      <!-- Inner Inset Shield Outline -->
+                      <path d="M50 16 L80 29 V62 C80 86 50 104 50 104 C50 104 20 86 20 62 V29 Z" stroke="url(#masterGoldGradient)" stroke-width="1.4" fill="none"/>
+                      
+                      <!-- Code Brackets </ > -->
+                      <path d="M36 49 L26 61 L36 73" stroke="url(#masterGoldGradient)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M64 49 L74 61 L64 73" stroke="url(#masterGoldGradient)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M58 46 L52 76" stroke="url(#masterGoldGradient)" stroke-width="2.4" stroke-linecap="round"/>
+                      
+                      <!-- Secure Padlock Symbol Nestled at Lower Right -->
+                      <g class="shield-padlock-symbol" transform="translate(68, 74)">
+                        <path d="M7 10 V6 C7 3 9.5 0.5 13 0.5 C16.5 0.5 19 3 19 6 V10" stroke="url(#masterGoldGradient)" stroke-width="2" fill="none"/>
+                        <rect x="3" y="9" width="20" height="15" rx="3" fill="#2d080e" stroke="url(#masterGoldGradient)" stroke-width="2"/>
+                        <circle cx="13" cy="15" r="1.8" fill="url(#masterGoldGradient)"/>
+                        <line x1="13" y1="16.5" x2="13" y2="19.5" stroke="url(#masterGoldGradient)" stroke-width="1.5" stroke-linecap="round"/>
+                      </g>
+                    </svg>
+                  </div>
+
+                  <!-- 6. Inspiring Three-Line Italic Philosophy Quote -->
+                  <blockquote class="cover-philosophical-quote">
+                    <p class="quote-row">&ldquo;Code is my craft.</p>
+                    <p class="quote-row">Automation is my weapon.</p>
+                    <p class="quote-row">Security is my priority.&rdquo;</p>
+                  </blockquote>
+
+                  <!-- Lower Gold Ornamental Divider with Diamond Accent -->
+                  <div class="gold-ornament-divider divider-lower" aria-hidden="true">
+                    <span class="flourish-bar left-bar"></span>
+                    <span class="flourish-gem">
+                      <svg viewBox="0 0 32 16" fill="currentColor">
+                        <circle cx="4" cy="8" r="1.5"/>
+                        <polygon points="16,2 20,8 16,14 12,8"/>
+                        <circle cx="28" cy="8" r="1.5"/>
+                      </svg>
+                    </span>
+                    <span class="flourish-bar right-bar"></span>
+                  </div>
+
+                  <!-- Subtle prompt to click & open -->
+                  <div class="cover-open-cue" aria-hidden="true">
+                    <span class="cue-pill">CLICK TO OPEN BOOK</span>
+                  </div>
+
+                </div><!-- /.cover-layout-content -->
+
+              </div><!-- /.gold-border-inner -->
+            </div><!-- /.gold-border-outer -->
+
+          </article><!-- /.book-cover-face -->
+
+          <!-- Closed Book Right Page Stack Edges -->
+          <div class="book-paper-stack-edges" aria-hidden="true">
+            <div class="edge-rim-top"></div>
+            <div class="edge-rim-right"></div>
+            <div class="edge-rim-bottom"></div>
+          </div>
+
+        </div><!-- /#closedBookStructure -->
+
+
+        <!-- ============================================================= -->
+        <!-- PART B: OPEN BOOK STATE                                        -->
+        <!-- ============================================================= -->
+        <div class="open-book-spread" id="openBookSpread" aria-label="Open Book" style="display: none;">
+
+          <!-- ----------------------------------------------------------- -->
+          <!-- B1. DESKTOP & TABLET TWO-PAGE SPREAD CHASSIS (UNTOUCHED)    -->
+          <!-- ----------------------------------------------------------- -->
+          <div class="two-page-chassis" id="twoPageChassis">
+
+            <!-- Open Book Leather Backing Casing with Outer Edge Rim -->
+            <div class="open-casing-rim rim-left" aria-hidden="true"></div>
+            <div class="open-casing-rim rim-right" aria-hidden="true"></div>
+
+            <!-- Stacked Page Edges along both flanks -->
+            <div class="open-page-edges stack-left" aria-hidden="true"></div>
+            <div class="open-page-edges stack-right" aria-hidden="true"></div>
+
+            <!-- LEFT PAGE CONTAINER -->
+            <article class="page-half page-left" id="pageLeftSlot" aria-label="Left Page">
+              <!-- Left Click Zone (Turns Page Backward) -->
+              <div class="book-click-zone zone-left" id="zoneLeftClick" title="Click left page to turn backward" role="button" aria-label="Previous Page"></div>
+              
+              <!-- Parchment Leaf Surface -->
+              <div class="parchment-sheet">
+                <div class="parchment-curved-shadow shadow-left" aria-hidden="true"></div>
+                <div class="parchment-inner-frame">
+                  
+                  <!-- Page Header -->
+                  <div class="parchment-page-header">
+                    <span class="parchment-chapter-tag" id="leftChapterTag">CHAPTER I</span>
+                    <span class="parchment-section-title" id="leftSectionTitle">ABOUT ME</span>
+                    <span class="parchment-page-num" id="leftPageNum">PAGE 1</span>
+                  </div>
+
+                  <div class="parchment-gold-rule" aria-hidden="true"></div>
+
+                  <!-- Page Architectural Body Placeholder -->
+                  <div class="parchment-content-body" id="leftContentBody">
+                    <!-- Dynamic structural layout rendered by script.js -->
+                  </div>
+
+                  <!-- Page Footer -->
+                  <div class="parchment-page-footer">
+                    <span class="footer-brand-monogram">SMO</span>
+                    <span class="footer-folio-tag" id="leftFolioTag">DIGITAL BOOK</span>
+                  </div>
+
+                </div><!-- /.parchment-inner-frame -->
+              </div><!-- /.parchment-sheet -->
+            </article><!-- /.page-left -->
+
+            <!-- CENTRAL GUTTER / SPINE BINDING CREASE -->
+            <div class="book-spine-gutter" aria-hidden="true">
+              <div class="gutter-deep-shadow"></div>
+              <div class="gutter-binding-line"></div>
+              <div class="gutter-stitching-track"></div>
+            </div>
+
+            <!-- RIGHT PAGE CONTAINER -->
+            <article class="page-half page-right" id="pageRightSlot" aria-label="Right Page">
+              <!-- Right Click Zone (Turns Page Forward) -->
+              <div class="book-click-zone zone-right" id="zoneRightClick" title="Click right page to turn forward" role="button" aria-label="Next Page"></div>
+
+              <!-- Parchment Leaf Surface -->
+              <div class="parchment-sheet">
+                <div class="parchment-curved-shadow shadow-right" aria-hidden="true"></div>
+                <div class="parchment-inner-frame">
+                  
+                  <!-- Page Header -->
+                  <div class="parchment-page-header">
+                    <span class="parchment-chapter-tag" id="rightChapterTag">CHAPTER I</span>
+                    <span class="parchment-section-title" id="rightSectionTitle">ABOUT ME</span>
+                    <span class="parchment-page-num" id="rightPageNum">PAGE 2</span>
+                  </div>
+
+                  <div class="parchment-gold-rule" aria-hidden="true"></div>
+
+                  <!-- Page Architectural Body Placeholder -->
+                  <div class="parchment-content-body" id="rightContentBody">
+                    <!-- Dynamic structural layout rendered by script.js -->
+                  </div>
+
+                  <!-- Page Footer -->
+                  <div class="parchment-page-footer">
+                    <span class="footer-folio-tag" id="rightFolioTag">SAMUEL MERCY OLUWATOBI</span>
+                    <span class="footer-brand-monogram">SMO</span>
+                  </div>
+
+                </div><!-- /.parchment-inner-frame -->
+              </div><!-- /.parchment-sheet -->
+            </article><!-- /.page-right -->
+
+            <!-- 3D FLIPPING LEAF FOR DESKTOP SPREADS -->
+            <div class="flipping-3d-leaf" id="flippingLeaf" aria-hidden="true" style="display: none;">
+              <div class="leaf-side leaf-front" id="leafFrontFace"></div>
+              <div class="leaf-side leaf-back" id="leafBackFace"></div>
+            </div>
+
+          </div><!-- /#twoPageChassis -->
+
+
+          <!-- ----------------------------------------------------------- -->
+          <!-- B2. MOBILE RING-BOUND JOTTER SINGLE PAGE CHASSIS            -->
+          <!-- Exactly matching the approved reference media_1788932039690 -->
+          <!-- ----------------------------------------------------------- -->
+          <div class="mobile-jotter-chassis" id="mobileJotterChassis" aria-label="Mobile Ring-Bound Jotter Page">
+
+            <!-- Deep Burgundy Wine Leather Outer Casing Backing -->
+            <div class="jotter-casing-backing" aria-hidden="true">
+              <div class="jotter-leather-stitch-rim"></div>
+            </div>
+
+            <!-- Left Ring-Binding Mechanism with 8 Antique Brass Rings -->
+            <aside class="jotter-ring-spine" aria-hidden="true">
+              <div class="ring-spine-leather-edge"></div>
+              <div class="ring-spine-inner-shadow"></div>
+              
+              <!-- 8 Circular Antique Brass Rings -->
+              <div class="rings-vertical-stack">
+                <div class="jotter-ring-item ring-1"><div class="brass-ring-loop"></div><div class="ring-paper-hole"></div></div>
+                <div class="jotter-ring-item ring-2"><div class="brass-ring-loop"></div><div class="ring-paper-hole"></div></div>
+                <div class="jotter-ring-item ring-3"><div class="brass-ring-loop"></div><div class="ring-paper-hole"></div></div>
+                <div class="jotter-ring-item ring-4"><div class="brass-ring-loop"></div><div class="ring-paper-hole"></div></div>
+                <div class="jotter-ring-item ring-5"><div class="brass-ring-loop"></div><div class="ring-paper-hole"></div></div>
+                <div class="jotter-ring-item ring-6"><div class="brass-ring-loop"></div><div class="ring-paper-hole"></div></div>
+                <div class="jotter-ring-item ring-7"><div class="brass-ring-loop"></div><div class="ring-paper-hole"></div></div>
+                <div class="jotter-ring-item ring-8"><div class="brass-ring-loop"></div><div class="ring-paper-hole"></div></div>
+              </div>
+            </aside>
+
+            <!-- Large Single Parchment Page Leaf -->
+            <article class="jotter-page-leaf" id="jotterPageLeaf">
+
+              <!-- Interactive Click Zones on Mobile Page -->
+              <div class="jotter-click-zone click-zone-prev" id="mobileZonePrev" title="Tap left to turn backward" role="button" aria-label="Previous Page"></div>
+              <div class="jotter-click-zone click-zone-next" id="mobileZoneNext" title="Tap right to turn forward" role="button" aria-label="Next Page"></div>
+
+              <!-- Aged Parchment Surface with Organic Texture & Left Binding Shadow -->
+              <div class="jotter-parchment-sheet">
+                <div class="jotter-spine-shadow" aria-hidden="true"></div>
+
+                <!-- Antique Gold Double Border Frame with 4 Victorian Filigree Corners -->
+                <div class="jotter-gold-border-outer">
+                  <div class="jotter-gold-border-inner">
+
+                    <!-- Top-Left Corner Filigree Accent -->
+                    <svg class="jotter-corner-accent corner-tl" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+                      <path d="M2 58 V16 C2 8 8 2 16 2 H58" stroke="url(#masterGoldGradient)" stroke-width="1.2"/>
+                      <path d="M6 54 V18 C6 11 11 6 18 6 H54" stroke="url(#masterGoldGradient)" stroke-width="0.7"/>
+                      <path d="M2 2 C16 2 24 10 24 24 C24 16 16 8 8 8 C2 8 2 16 8 16" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                      <circle cx="12" cy="12" r="1.8" fill="url(#masterGoldGradient)"/>
+                    </svg>
+
+                    <!-- Top-Right Corner Filigree Accent -->
+                    <svg class="jotter-corner-accent corner-tr" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+                      <path d="M2 58 V16 C2 8 8 2 16 2 H58" stroke="url(#masterGoldGradient)" stroke-width="1.2"/>
+                      <path d="M6 54 V18 C6 11 11 6 18 6 H54" stroke="url(#masterGoldGradient)" stroke-width="0.7"/>
+                      <path d="M2 2 C16 2 24 10 24 24 C24 16 16 8 8 8 C2 8 2 16 8 16" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                      <circle cx="12" cy="12" r="1.8" fill="url(#masterGoldGradient)"/>
+                    </svg>
+
+                    <!-- Bottom-Left Corner Filigree Accent -->
+                    <svg class="jotter-corner-accent corner-bl" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+                      <path d="M2 58 V16 C2 8 8 2 16 2 H58" stroke="url(#masterGoldGradient)" stroke-width="1.2"/>
+                      <path d="M6 54 V18 C6 11 11 6 18 6 H54" stroke="url(#masterGoldGradient)" stroke-width="0.7"/>
+                      <path d="M2 2 C16 2 24 10 24 24 C24 16 16 8 8 8 C2 8 2 16 8 16" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                      <circle cx="12" cy="12" r="1.8" fill="url(#masterGoldGradient)"/>
+                    </svg>
+
+                    <!-- Bottom-Right Corner Filigree Accent -->
+                    <svg class="jotter-corner-accent corner-br" viewBox="0 0 60 60" fill="none" aria-hidden="true">
+                      <path d="M2 58 V16 C2 8 8 2 16 2 H58" stroke="url(#masterGoldGradient)" stroke-width="1.2"/>
+                      <path d="M6 54 V18 C6 11 11 6 18 6 H54" stroke="url(#masterGoldGradient)" stroke-width="0.7"/>
+                      <path d="M2 2 C16 2 24 10 24 24 C24 16 16 8 8 8 C2 8 2 16 8 16" stroke="url(#masterGoldGradient)" stroke-width="1"/>
+                      <circle cx="12" cy="12" r="1.8" fill="url(#masterGoldGradient)"/>
+                    </svg>
+
+                    <!-- Page Content Layout Grid -->
+                    <div class="jotter-page-body-grid">
+
+                      <!-- Top Header: CHAPTER I with Horizontal Flourish and Diamond Gem -->
+                      <div class="jotter-header-block">
+                        <div class="jotter-chapter-numeral" id="mobileChapterTag">CHAPTER I</div>
+                        <div class="jotter-header-flourish" aria-hidden="true">
+                          <span class="h-flourish-line"></span>
+                          <span class="h-flourish-diamond">✦</span>
+                          <span class="h-flourish-line"></span>
+                        </div>
+                        <h2 class="jotter-section-title" id="mobileSectionTitle">ABOUT ME</h2>
+                      </div>
+
+                      <!-- Reusable Page Template Content Area: Uncrowded & Ready for Future Data -->
+                      <div class="jotter-content-canvas" id="mobileContentCanvas">
+                        <!-- Clean structural architectural placeholder -->
+                        <div class="jotter-arch-card">
+                          <div class="jotter-arch-icon-wrap" id="mobileIconWrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                              <circle cx="12" cy="12" r="10"/>
+                              <path d="M12 16v-4M12 8h.01"/>
+                            </svg>
+                          </div>
+                          <h3 class="jotter-arch-headline" id="mobileHeadline">OVERVIEW</h3>
+                          <p class="jotter-arch-caption" id="mobileCaption">IDENTITY &amp; PURPOSE</p>
+                          <div class="jotter-arch-lines" aria-hidden="true">
+                            <div class="arch-line line-1"></div>
+                            <div class="arch-line line-2"></div>
+                            <div class="arch-line line-3"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Bottom Footer: ◆ PAGE 1 OF 1 ◆ exactly like reference image -->
+                      <div class="jotter-footer-block">
+                        <div class="jotter-footer-flourish">
+                          <span class="f-flourish-line"></span>
+                          <span class="f-flourish-tag" id="mobilePageNum">◆ PAGE 1 OF 1 ◆</span>
+                          <span class="f-flourish-line"></span>
+                        </div>
+                      </div>
+
+                    </div><!-- /.jotter-page-body-grid -->
+
+                  </div><!-- /.jotter-gold-border-inner -->
+                </div><!-- /.jotter-gold-border-outer -->
+
+              </div><!-- /.jotter-parchment-sheet -->
+
+              <!-- Right Edge Physical Paper Stack Layers -->
+              <div class="jotter-paper-stack" aria-hidden="true"></div>
+
+              <!-- Right Edge Burgundy Leather Page-Turn Tab (From reference image) -->
+              <button class="jotter-turn-tab" id="mobileTurnTab" aria-label="Turn to Next Page" title="Next Page">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+
+            </article><!-- /.jotter-page-leaf -->
+
+            <!-- 3D Flipping Leaf for Mobile Physical Page Turn -->
+            <div class="mobile-flipping-leaf" id="mobileFlippingLeaf" aria-hidden="true" style="display: none;">
+              <div class="mobile-leaf-face leaf-front" id="mobileLeafFront"></div>
+              <div class="mobile-leaf-face leaf-back" id="mobileLeafBack"></div>
+            </div>
+
+          </div><!-- /#mobileJotterChassis -->
+
+        </div><!-- /#openBookSpread -->
+
+      </div><!-- /#bookVolumeAssembly -->
+
+    </main><!-- /.book-stage-area -->
+
+    <!-- Right Navigation Arrow Button (>) -->
+    <button class="nav-flipper-arrow arrow-right" id="arrowNext" aria-label="Turn Page Forward" title="Next Page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+
+  </div><!-- /.composition-stage -->
+
+  <!-- Real-Time Spread & Chapter Status Badge -->
+  <div class="book-page-flipper-pill" id="pageFlipperPill" role="status" aria-live="polite" style="display: none;">
+    <span class="flipper-pulsing-dot"></span>
+    <span class="flipper-status-message" id="flipperStatusMsg">HOME • Book Cover</span>
+  </div>
+
+  <!-- Certificate Inspection Lightbox Modal -->
+  <div class="cert-lightbox-overlay" id="certLightboxModal" role="dialog" aria-modal="true" aria-label="Certificate Image Inspection" style="display: none;">
+    <div class="cert-lightbox-backdrop" id="certLightboxBackdrop"></div>
+    <div class="cert-lightbox-content">
+      <button class="cert-lightbox-close" id="certLightboxClose" aria-label="Close inspection view" title="Close (Esc)">&times;</button>
+      <div class="cert-lightbox-frame">
+        <img class="cert-lightbox-img" id="certLightboxImg" src="" alt="Enlarged Certificate" />
+      </div>
+      <div class="cert-lightbox-caption" id="certLightboxCaption"></div>
+    </div>
+  </div>
+
+  <!-- Firebase Web SDK (Compat mode — matches admin.html setup exactly) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script src="portfolio-config.js"></script>
+  <script src="portfolio-service.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>

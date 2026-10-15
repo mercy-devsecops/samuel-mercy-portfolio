@@ -1,0 +1,5351 @@
+/* ==========================================================================
+   SAMUEL MERCY OLUWATOBI — LUXURY INTERACTIVE DIGITAL BOOK PORTFOLIO
+   Two-Page Spread Engine (Desktop/Tablet) & Mobile Ring-Bound Jotter Engine
+   ========================================================================== */
+
+/* 1. Design Tokens & Variables */
+:root {
+  /* Master Leather & Cinematic Tones */
+  --leather-base: #320911;
+  --leather-dark: #1f0408;
+  --leather-deep: #150205;
+  --leather-rim: #4c121d;
+  --leather-highlight: #5a1723;
+  --bg-deep: #080304;
+  --bg-warm-dark: #120608;
+  --bg-mahogany: #240c10;
+  
+  /* Metallic Gold Palette */
+  --gold-foil-light: #fff5c0;
+  --gold-foil-mid: #e1bc76;
+  --gold-foil-dark: #aa7c11;
+  --gold-foil-deep: #785304;
+  --gold-accent-glow: rgba(225, 188, 118, 0.45);
+  --gold-border-stroke: rgba(225, 188, 118, 0.75);
+
+  /* Parchment Interior Palette */
+  --parchment-light: #f7eedb;
+  --parchment-mid: #ebe0ca;
+  --parchment-dark: #dcceb4;
+  --parchment-ink: #2b140b;
+  --parchment-ink-muted: #6b4d3a;
+  --parchment-border: rgba(140, 95, 35, 0.4);
+
+  /* Glassmorphism Navigation */
+  --sidebar-glass-bg: rgba(18, 9, 11, 0.78);
+  --sidebar-glass-border: rgba(212, 175, 55, 0.28);
+  --sidebar-star-color: #ffd875;
+
+  /* Typography Stacks */
+  --font-serif-master: 'Cinzel', serif;
+  --font-serif-decorative: 'Cinzel Decorative', serif;
+  --font-serif-body: 'Cormorant Garamond', Georgia, serif;
+  --font-sans-ui: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* 2. Reset & Base Setup */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--bg-deep);
+  color: #fff;
+  font-family: var(--font-sans-ui);
+  overflow-x: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 3. Ambient Cinematic Environment */
+.cinematic-stage-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  background: radial-gradient(circle at 65% 38%, var(--bg-mahogany) 0%, var(--bg-warm-dark) 48%, var(--bg-deep) 100%);
+}
+
+.ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+}
+
+.glow-top-right {
+  top: -15%;
+  right: 12%;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, rgba(245, 190, 95, 0.18) 0%, rgba(190, 110, 35, 0.08) 50%, transparent 75%);
+}
+
+.glow-top-left {
+  top: -10%;
+  left: 4%;
+  width: 440px;
+  height: 440px;
+  background: radial-gradient(circle, rgba(160, 80, 40, 0.08) 0%, transparent 70%);
+}
+
+.glow-center {
+  top: 30%;
+  left: 42%;
+  width: 680px;
+  height: 680px;
+  background: radial-gradient(circle, rgba(210, 140, 55, 0.09) 0%, transparent 65%);
+}
+
+.background-decor {
+  position: absolute;
+  bottom: 8%;
+  opacity: 0.15;
+  filter: blur(14px);
+  pointer-events: none;
+}
+
+.decor-left {
+  left: 5%;
+  width: 150px;
+  height: 300px;
+  background: linear-gradient(180deg, rgba(200, 150, 80, 0.6) 0%, transparent 90%);
+  border-radius: 50% 50% 10% 10%;
+}
+
+.decor-right {
+  right: 3%;
+  width: 200px;
+  height: 400px;
+  background: linear-gradient(180deg, rgba(220, 170, 90, 0.75) 0%, transparent 95%);
+  border-radius: 40% 40% 15% 15%;
+}
+
+.tabletop-plane {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20vh;
+  background: linear-gradient(180deg, rgba(22, 10, 8, 0.96) 0%, #090304 60%, #030102 100%);
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow: inset 0 2px 14px rgba(223, 186, 115, 0.06);
+}
+
+.tabletop-gold-pool {
+  position: absolute;
+  top: 0;
+  left: 45%;
+  width: 500px;
+  height: 90px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(225, 188, 118, 0.16) 0%, rgba(180, 120, 45, 0.08) 50%, transparent 80%);
+  filter: blur(16px);
+  transform: translateX(-20%);
+}
+
+.tabletop-sheen {
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 70px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(223, 186, 115, 0.14) 0%, transparent 75%);
+  filter: blur(12px);
+}
+
+.cinematic-vignette {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 130px 45px rgba(0, 0, 0, 0.88);
+}
+
+/* 4. Mobile Header Bar (Clean single header) */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(14, 8, 10, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  padding: 0 20px;
+  z-index: 100;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-menu-toggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 17px;
+  padding: 0;
+}
+
+.hamburger-bar {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--gold-foil-mid);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.mobile-brand {
+  font-family: var(--font-serif-master);
+  font-size: 16px;
+  letter-spacing: 0.24em;
+  font-weight: 700;
+  background: linear-gradient(180deg, var(--gold-foil-light), var(--gold-foil-mid));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 5. Main Composition Stage */
+.composition-stage {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 2.5vw, 36px);
+  width: 100%;
+  max-width: 1480px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px clamp(16px, 2vw, 36px);
+  transition: all 0.5s ease;
+}
+
+/* 6. Navigation Sidebar */
+.navigation-sidebar {
+  position: relative;
+  width: clamp(180px, 14vw, 210px);
+  height: clamp(540px, 64vh, 660px);
+  background: var(--sidebar-glass-bg);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--sidebar-glass-border);
+  border-radius: 28px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65), 0 0 20px rgba(212, 175, 55, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 14px 20px;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  z-index: 30;
+}
+
+.sidebar-star-accent {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--sidebar-star-color);
+  filter: drop-shadow(0 0 7px rgba(225, 188, 118, 0.88));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-star-accent svg {
+  width: 100%;
+  height: 100%;
+}
+
+.nav-item-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.nav-li {
+  width: 100%;
+}
+
+.nav-item-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9.5px 14px;
+  border-radius: 22px;
+  font-family: var(--font-serif-master);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: rgba(240, 225, 205, 0.72);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  text-align: left;
+}
+
+.nav-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.nav-icon-wrap svg {
+  width: 100%;
+  height: 100%;
+}
+
+.nav-label-text {
+  flex: 1;
+}
+
+.nav-item-btn:hover {
+  color: var(--gold-foil-light);
+  background: rgba(255, 235, 180, 0.08);
+  transform: translateX(3px);
+}
+
+.nav-item-btn:hover .nav-icon-wrap {
+  opacity: 1;
+  color: var(--gold-foil-mid);
+}
+
+.nav-item-btn.active {
+  background: linear-gradient(90deg, #4d101a 0%, #2f070e 100%);
+  color: var(--gold-foil-light);
+  border: 1px solid rgba(225, 188, 118, 0.65);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(225, 188, 118, 0.2);
+}
+
+.nav-item-btn.active .nav-icon-wrap {
+  opacity: 1;
+  color: var(--gold-foil-mid);
+  filter: drop-shadow(0 0 5px rgba(225, 188, 118, 0.6));
+}
+
+.sidebar-social-dock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(212, 175, 55, 0.16);
+}
+
+.social-dock-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: rgba(225, 188, 118, 0.65);
+  transition: all 0.25s ease;
+}
+
+.social-dock-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.social-dock-btn:hover {
+  color: var(--gold-foil-light);
+  background: rgba(225, 188, 118, 0.12);
+  transform: translateY(-2px);
+  filter: drop-shadow(0 0 6px rgba(225, 188, 118, 0.6));
+}
+
+/* 7. Navigation Arrows (Left & Right) */
+.nav-flipper-arrow {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(22, 11, 14, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  color: var(--gold-foil-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.nav-flipper-arrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nav-flipper-arrow:hover {
+  border-color: rgba(225, 188, 118, 0.9);
+  color: var(--gold-foil-light);
+  box-shadow: 0 0 18px rgba(225, 188, 118, 0.45);
+  transform: scale(1.08);
+}
+
+.nav-flipper-arrow:active {
+  transform: scale(0.96);
+}
+
+/* 8. The Centerpiece Book Assembly */
+.book-stage-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1600px;
+  flex-shrink: 0;
+}
+
+.book-cast-shadow {
+  position: absolute;
+  bottom: -28px;
+  left: 4%;
+  right: 4%;
+  height: 42px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.96) 0%, rgba(20, 4, 8, 0.65) 45%, transparent 75%);
+  filter: blur(10px);
+  pointer-events: none;
+  transition: all 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.book-volume-assembly {
+  position: relative;
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 24px 44px rgba(0, 0, 0, 0.92));
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1), height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* CLOSED STATE DIMENSIONS (Master Single Cover - Desktop/Tablet) */
+.book-volume-assembly.state-closed {
+  width: clamp(350px, 36vw, 480px);
+  height: clamp(510px, 54vw, 690px);
+}
+
+/* OPEN STATE DIMENSIONS (Full Two-Page Spread - Desktop/Tablet) */
+.book-volume-assembly.state-open {
+  width: clamp(740px, 74vw, 1020px);
+  height: clamp(480px, 52vw, 670px);
+}
+
+
+/* ==========================================================================
+   PART A: CLOSED BOOK STRUCTURE & APPROVED MASTER COVER
+   ========================================================================== */
+.closed-book-structure {
+  display: flex;
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.book-volume-assembly.state-open .closed-book-structure {
+  opacity: 0;
+  pointer-events: none;
+  transform: rotateY(-110deg);
+}
+
+.book-spine {
+  position: relative;
+  width: clamp(38px, 3.8vw, 50px);
+  height: 100%;
+  background: linear-gradient(90deg, #110205 0%, #2e080f 22%, #4d121c 50%, #340911 82%, #130205 100%);
+  border-radius: 6px 0 0 6px;
+  box-shadow: inset 2px 0 4px rgba(255, 220, 150, 0.1), inset -3px 0 8px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 18px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.spine-cylinder-lighting {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 35%, rgba(255, 255, 255, 0.12) 50%, transparent 65%);
+  pointer-events: none;
+}
+
+.spine-ribs-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.spine-rib {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #24060b 0%, #681c28 50%, #24060b 100%);
+  border-top: 1px solid rgba(225, 188, 118, 0.75);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+}
+
+.spine-vertical-text-track {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+  overflow: hidden;
+}
+
+.spine-title-rotated {
+  writing-mode: vertical-rl;
+  font-family: var(--font-serif-master);
+  font-size: clamp(9px, 0.92vw, 11px);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--gold-foil-mid);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 6px rgba(225, 188, 118, 0.35);
+  white-space: nowrap;
+}
+
+.spine-monogram-emblem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.spine-smo-cell {
+  border: 1px solid rgba(212, 175, 55, 0.75);
+  padding: 2px 4px;
+  font-family: var(--font-serif-master);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--gold-foil-mid);
+  border-radius: 2px;
+}
+
+.spine-symbol-plus {
+  font-family: var(--font-serif-master);
+  font-size: 11px;
+  color: var(--gold-foil-mid);
+  line-height: 1;
+}
+
+.spine-crimson-ribbon {
+  position: absolute;
+  bottom: -40px;
+  left: 45%;
+  transform: translateX(-50%);
+  width: 15px;
+  height: 48px;
+  background: linear-gradient(90deg, #5b0f19 0%, #982234 45%, #460911 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
+  filter: drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.85));
+  pointer-events: none;
+}
+
+.book-cover-face {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  border-radius: 0 6px 6px 0;
+  background: radial-gradient(circle at 65% 35%, #441019 0%, #300911 50%, #1c0307 100%);
+  overflow: hidden;
+  box-shadow: inset 1px 0 3px rgba(255, 230, 160, 0.12);
+  cursor: pointer;
+}
+
+.leather-grain-skin {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image: radial-gradient(rgba(255, 230, 180, 0.04) 1px, transparent 1px), radial-gradient(rgba(0, 0, 0, 0.4) 1px, transparent 1px);
+  background-size: 3px 3px, 4px 4px;
+  background-position: 0 0, 1.5px 1.5px;
+  pointer-events: none;
+}
+
+.leather-crease-groove {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 14px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.35) 40%, transparent 100%);
+  pointer-events: none;
+}
+
+.leather-specular-glow {
+  position: absolute;
+  top: -15%;
+  right: -15%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(245, 205, 130, 0.09) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.gold-border-outer {
+  position: absolute;
+  top: clamp(12px, 2vw, 22px);
+  bottom: clamp(12px, 2vw, 22px);
+  left: clamp(14px, 2vw, 24px);
+  right: clamp(12px, 2vw, 22px);
+  border: 1.8px solid rgba(225, 188, 118, 0.85);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.8), 0 0 8px rgba(225, 188, 118, 0.2);
+}
+
+.gold-border-inner {
+  position: absolute;
+  inset: 7px;
+  border: 1.1px solid rgba(225, 188, 118, 0.7);
+  box-shadow: inset 0 0 12px rgba(25, 4, 8, 0.8);
+}
+
+.corner-scroll {
+  position: absolute;
+  width: clamp(40px, 4.4vw, 58px);
+  height: clamp(40px, 4.4vw, 58px);
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(225, 188, 118, 0.6));
+}
+
+.corner-tl { top: -2px; left: -2px; }
+.corner-tr { top: -2px; right: -2px; transform: scaleX(-1); }
+.corner-bl { bottom: -2px; left: -2px; transform: scaleY(-1); }
+.corner-br { bottom: -2px; right: -2px; transform: scale(-1); }
+
+.cover-layout-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(16px, 2.6vw, 28px) clamp(14px, 2.2vw, 26px);
+  text-align: center;
+}
+
+.cover-monogram-cell {
+  border: 1.2px solid rgba(225, 188, 118, 0.85);
+  padding: 3px clamp(12px, 1.6vw, 20px);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(225, 188, 118, 0.2), inset 0 0 4px rgba(225, 188, 118, 0.15);
+}
+
+.smo-badge-text {
+  font-family: var(--font-serif-master);
+  font-size: clamp(12px, 1.3vw, 15px);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--gold-foil-light);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.cover-digital-portfolio-title {
+  margin-top: -2px;
+}
+
+.sub-title-text {
+  font-family: var(--font-serif-master);
+  font-size: clamp(9px, 1.05vw, 11.5px);
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  color: var(--gold-foil-mid);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.gold-ornament-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 78%;
+  max-width: 220px;
+}
+
+.flourish-bar {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(225, 188, 118, 0.75), transparent);
+}
+
+.flourish-gem {
+  color: var(--gold-foil-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flourish-gem svg {
+  width: 28px;
+  height: 14px;
+}
+
+.cover-hero-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  margin: 4px 0;
+}
+
+.name-tier {
+  font-family: var(--font-serif-master);
+  font-size: clamp(30px, 4.2vw, 46px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: linear-gradient(180deg, #fff6c4 0%, #eed480 26%, #cc9839 56%, #835815 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 16px rgba(225, 188, 118, 0.35));
+}
+
+.tier-mercy {
+  letter-spacing: 0.12em;
+}
+
+.tier-oluwatobi {
+  font-size: clamp(23px, 3.1vw, 34px);
+  letter-spacing: 0.15em;
+}
+
+.cover-tagline-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  gap: clamp(5px, 0.8vw, 9px);
+  font-family: var(--font-sans-ui);
+  font-size: clamp(8px, 0.95vw, 10.5px);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: var(--gold-foil-mid);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.tagline-dot {
+  opacity: 0.75;
+}
+
+.cover-shield-emblem-wrap {
+  margin: 3px 0;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+}
+
+.shield-vector {
+  width: clamp(56px, 6vw, 72px);
+  height: clamp(66px, 7vw, 86px);
+}
+
+.cover-philosophical-quote {
+  font-family: var(--font-serif-body);
+  font-style: italic;
+  font-size: clamp(15px, 1.7vw, 19px);
+  line-height: 1.45;
+  color: #eeddbb;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+  max-width: 90%;
+}
+
+.quote-row {
+  margin: 0;
+}
+
+.cover-open-cue {
+  margin-top: 4px;
+}
+
+.cue-pill {
+  display: inline-block;
+  font-family: var(--font-serif-master);
+  font-size: 8.5px;
+  letter-spacing: 0.22em;
+  color: var(--gold-foil-mid);
+  border: 1px solid rgba(225, 188, 118, 0.4);
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(20, 4, 8, 0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  transition: all 0.25s ease;
+}
+
+.book-cover-face:hover .cue-pill {
+  border-color: rgba(225, 188, 118, 0.85);
+  color: var(--gold-foil-light);
+  box-shadow: 0 0 12px rgba(225, 188, 118, 0.35);
+  transform: translateY(-1px);
+}
+
+.book-paper-stack-edges {
+  position: absolute;
+  top: 4px;
+  right: -14px;
+  bottom: 4px;
+  width: 14px;
+  background: repeating-linear-gradient(
+    180deg,
+    #ded4c3 0px,
+    #cfbeaa 1px,
+    #ebe2d5 2px,
+    #bfae98 3px
+  );
+  border-radius: 0 4px 4px 0;
+  box-shadow: inset 1px 0 3px rgba(0, 0, 0, 0.6), 4px 0 12px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+}
+
+.book-paper-stack-edges .edge-rim-bottom {
+  position: absolute;
+  bottom: -11px;
+  left: -20px;
+  right: 0;
+  height: 11px;
+  background: repeating-linear-gradient(
+    90deg,
+    #ded4c3 0px,
+    #cfbeaa 1px,
+    #ebe2d5 2px,
+    #bfae98 3px
+  );
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+}
+
+
+/* ==========================================================================
+   PART B: OPEN BOOK SYSTEM
+   ========================================================================== */
+.open-book-spread {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  background: var(--leather-base);
+  border-radius: 6px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), inset 0 0 25px rgba(0, 0, 0, 0.85);
+  overflow: visible;
+}
+
+.book-volume-assembly.state-closed .open-book-spread {
+  display: none !important;
+}
+
+.book-volume-assembly.state-open .open-book-spread {
+  display: flex !important;
+  animation: fadeInSpread 0.4s ease forwards;
+}
+
+@keyframes fadeInSpread {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+
+/* --------------------------------------------------------------------------
+   B1. DESKTOP & TABLET TWO-PAGE SPREAD (100% PRESERVED & UNTOUCHED)
+   -------------------------------------------------------------------------- */
+.two-page-chassis {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  perspective: 1800px;
+  transform-style: preserve-3d;
+  background: transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 14px 18px;
+}
+
+.open-casing-rim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  background: linear-gradient(90deg, #180306, #3b0e16);
+  pointer-events: none;
+}
+
+.rim-left {
+  left: 0;
+  border-radius: 6px 0 0 6px;
+}
+
+.rim-right {
+  right: 0;
+  transform: scaleX(-1);
+  border-radius: 6px 0 0 6px;
+}
+
+.open-page-edges {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 12px;
+  background: repeating-linear-gradient(
+    180deg,
+    #cfbeaa 0px,
+    #ded4c3 1px,
+    #ebe2d5 2px,
+    #bfae98 3px
+  );
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+.stack-left {
+  left: 4px;
+  border-radius: 3px 0 0 3px;
+}
+
+.stack-right {
+  right: 4px;
+  border-radius: 0 3px 3px 0;
+}
+
+.page-half {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.page-left {
+  border-radius: 4px 0 0 4px;
+}
+
+.page-right {
+  border-radius: 0 4px 4px 0;
+}
+
+.book-click-zone {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.book-spine-gutter {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gutter-deep-shadow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.85) 45%,
+    #110306 50%,
+    rgba(0, 0, 0, 0.85) 55%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+}
+
+.gutter-binding-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: rgba(225, 188, 118, 0.4);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+}
+
+.gutter-stitching-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px,
+    transparent 12px,
+    rgba(225, 188, 118, 0.45) 12px,
+    rgba(225, 188, 118, 0.45) 15px
+  );
+}
+
+.parchment-sheet {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 50%, var(--parchment-light) 0%, var(--parchment-mid) 65%, var(--parchment-dark) 100%);
+  color: var(--parchment-ink);
+  box-shadow: inset 0 0 35px rgba(110, 75, 30, 0.28);
+  padding: clamp(14px, 1.8vw, 24px);
+}
+
+.parchment-curved-shadow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 45px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.shadow-left {
+  right: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(50, 20, 5, 0.18) 70%, rgba(20, 5, 0, 0.45) 100%);
+}
+
+.shadow-right {
+  left: 0;
+  background: linear-gradient(270deg, transparent 0%, rgba(50, 20, 5, 0.18) 70%, rgba(20, 5, 0, 0.45) 100%);
+}
+
+.parchment-inner-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--parchment-border);
+  padding: clamp(12px, 1.6vw, 20px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: inset 0 0 10px rgba(140, 95, 35, 0.1);
+}
+
+.parchment-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+}
+
+.parchment-chapter-tag {
+  font-family: var(--font-serif-master);
+  font-size: clamp(9px, 0.9vw, 11px);
+  letter-spacing: 0.22em;
+  color: #835216;
+  font-weight: 700;
+}
+
+.parchment-section-title {
+  font-family: var(--font-serif-master);
+  font-size: clamp(12px, 1.3vw, 16px);
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: #3b141a;
+}
+
+.parchment-page-num {
+  font-family: var(--font-serif-master);
+  font-size: clamp(9px, 0.85vw, 10.5px);
+  letter-spacing: 0.16em;
+  color: #835216;
+}
+
+.parchment-gold-rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(140, 95, 35, 0.45), transparent);
+  margin-bottom: 10px;
+}
+
+.parchment-content-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 10px 8px;
+  overflow: hidden;
+}
+
+.arch-card-frame {
+  width: 100%;
+  max-width: 320px;
+  border: 1px dashed rgba(140, 95, 35, 0.4);
+  border-radius: 4px;
+  padding: 14px;
+  background: rgba(140, 95, 35, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.arch-card-icon {
+  width: 32px;
+  height: 32px;
+  color: #835216;
+  opacity: 0.8;
+}
+
+.arch-card-title {
+  font-family: var(--font-serif-master);
+  font-size: clamp(12px, 1.2vw, 14px);
+  letter-spacing: 0.14em;
+  color: #3b141a;
+  font-weight: 700;
+}
+
+.arch-card-sub {
+  font-family: var(--font-sans-ui);
+  font-size: clamp(9px, 0.85vw, 11px);
+  color: var(--parchment-ink-muted);
+  letter-spacing: 0.08em;
+}
+
+.arch-slot-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 260px;
+  margin-top: 4px;
+}
+
+.arch-slot-pill {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(140, 95, 35, 0.15);
+}
+
+.arch-slot-pill.short {
+  width: 65%;
+  margin: 0 auto;
+}
+
+.parchment-page-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid rgba(140, 95, 35, 0.25);
+  font-family: var(--font-serif-master);
+  font-size: clamp(8px, 0.8vw, 9.5px);
+  letter-spacing: 0.2em;
+  color: #835216;
+}
+
+.footer-brand-monogram {
+  font-weight: 700;
+  border: 1px solid rgba(140, 95, 35, 0.45);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   LUXURY EDITORIAL ABOUT ME — CHAPTER I PAGE 1 STYLES
+   Timeless literary book aesthetics: natural paper flow, illuminated drop cap,
+   gilded tipped-in portrait frame, and refined editorial quote plaque.
+   ========================================================================== */
+
+/* Remove centering constraint when rendering editorial chapters */
+.parchment-content-body.has-editorial-flow,
+.parchment-content-body:has(.about-editorial-story),
+.parchment-content-body:has(.skills-editorial-flow),
+.parchment-content-body:has(.project-case-study),
+.parchment-content-body:has(.certificate-showcase),
+.parchment-content-body:has(.education-showcase) {
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: left;
+  padding: 4px 6px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 130, 45, 0.45) rgba(140, 95, 35, 0.05);
+}
+.parchment-content-body.has-editorial-flow::-webkit-scrollbar,
+.parchment-content-body:has(.about-editorial-story)::-webkit-scrollbar,
+.parchment-content-body:has(.skills-editorial-flow)::-webkit-scrollbar,
+.parchment-content-body:has(.project-case-study)::-webkit-scrollbar,
+.parchment-content-body:has(.certificate-showcase)::-webkit-scrollbar,
+.parchment-content-body:has(.education-showcase)::-webkit-scrollbar {
+  display: block;
+  width: 5px;
+}
+.parchment-content-body.has-editorial-flow::-webkit-scrollbar-track,
+.parchment-content-body:has(.project-case-study)::-webkit-scrollbar-track,
+.parchment-content-body:has(.certificate-showcase)::-webkit-scrollbar-track {
+  background: rgba(140, 95, 35, 0.05);
+  border-radius: 3px;
+}
+.parchment-content-body.has-editorial-flow::-webkit-scrollbar-thumb,
+.parchment-content-body:has(.project-case-study)::-webkit-scrollbar-thumb,
+.parchment-content-body:has(.certificate-showcase)::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d4af37 0%, #845417 100%);
+  border-radius: 3px;
+  border: 1px solid rgba(255, 235, 175, 0.35);
+}
+.parchment-content-body.has-editorial-flow::-webkit-scrollbar-thumb:hover,
+.parchment-content-body:has(.project-case-study)::-webkit-scrollbar-thumb:hover,
+.parchment-content-body:has(.certificate-showcase)::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f5dc94 0%, #a06e1e 100%);
+}
+
+.about-editorial-story {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--parchment-ink);
+  position: relative;
+  min-height: 100%;
+}
+
+/* Header Kicker & Story Heading */
+.about-story-header {
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.about-story-kicker {
+  font-family: var(--font-serif-master);
+  font-size: clamp(8.5px, 0.8vw, 10px);
+  letter-spacing: 0.22em;
+  color: #845417;
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: inline-block;
+}
+
+.about-story-heading {
+  font-family: var(--font-serif-master);
+  font-size: clamp(15px, 1.4vw, 19px);
+  font-weight: 700;
+  color: #2b080f;
+  line-height: 1.25;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+.about-story-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 6px 0 10px 0;
+}
+
+.story-flourish-bar {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(140, 95, 35, 0.45), transparent);
+}
+
+.about-story-divider .story-flourish-bar:first-child {
+  background: linear-gradient(270deg, rgba(140, 95, 35, 0.45), transparent);
+}
+
+.story-flourish-gem {
+  color: #845417;
+  font-size: 8px;
+}
+
+/* Portrait Vignette with Gilded Edge */
+.about-portrait-vignette {
+  float: right;
+  margin: 2px 0 10px 16px;
+  width: clamp(110px, 12vw, 135px);
+  max-width: 42%;
+  position: relative;
+  z-index: 2;
+}
+
+.about-portrait-vignette.no-body-portrait {
+  float: none;
+  margin: 12px auto;
+  max-width: 170px;
+  width: 140px;
+}
+
+.portrait-gilded-casing {
+  position: relative;
+  padding: 3px;
+  background: linear-gradient(135deg, #f5dc94 0%, #d4af37 45%, #805b10 100%);
+  border-radius: 4px;
+  box-shadow: 0 8px 20px rgba(35, 10, 15, 0.2), 0 2px 6px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.portrait-gilded-casing::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.about-portrait-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  border-radius: 2px;
+  background: #1b090e;
+  filter: contrast(1.02) saturate(0.96);
+}
+
+.portrait-specular-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 45%);
+  pointer-events: none;
+}
+
+/* Narrative Body Typography */
+.about-story-text-flow {
+  font-family: var(--font-serif-body);
+  font-size: 18px !important;
+  line-height: 1.7;
+  color: #120402 !important;
+  font-weight: 600 !important;
+}
+
+.about-story-text-flow p {
+  margin-bottom: 10px;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+/* Classical Illuminated Drop Cap on First Paragraph */
+.about-story-lead::first-letter {
+  float: left;
+  font-family: var(--font-serif-master);
+  font-size: 3em;
+  line-height: 0.82;
+  padding: 3px 8px 0 0;
+  color: #7b490f;
+  font-weight: 800;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Supporting Highlight / Editorial Callout */
+.about-story-highlight {
+  clear: both;
+  margin: 12px 0 8px 0;
+  padding: 8px 14px 8px 16px;
+  border-left: 2px solid #845417;
+  background: linear-gradient(90deg, rgba(140, 95, 35, 0.08) 0%, rgba(140, 95, 35, 0.01) 100%);
+  border-radius: 0 4px 4px 0;
+  position: relative;
+}
+
+.highlight-ornament {
+  position: absolute;
+  top: -5px;
+  left: -6px;
+  width: 11px;
+  height: 11px;
+  color: #845417;
+}
+
+.highlight-text-content {
+  font-family: var(--font-serif-body);
+  font-size: clamp(13px, 1.05vw, 14.5px);
+  font-style: italic;
+  line-height: 1.6;
+  color: #3b1c0c;
+  font-weight: 500;
+}
+
+/* Chapter Bottom Vignette */
+.about-story-tail {
+  margin-top: auto;
+  padding-top: 10px;
+  text-align: center;
+  color: #845417;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  opacity: 0.75;
+}
+
+/* Editorial Seal Stamp on Blank Page (Right page of spread when single page) */
+.editorial-seal-plate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  width: 100%;
+  max-width: 280px;
+  margin: auto;
+}
+
+.seal-embossed-shield {
+  width: 48px;
+  height: 48px;
+  color: #845417;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 2px 6px rgba(140, 95, 35, 0.25));
+}
+
+.seal-legend {
+  font-family: var(--font-serif-master);
+  font-size: 11.5px;
+  letter-spacing: 0.24em;
+  color: #3b141a;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.seal-rule {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(140, 95, 35, 0.5), transparent);
+  margin: 6px 0 10px 0;
+}
+
+.seal-quote {
+  font-family: var(--font-serif-body);
+  font-style: italic;
+  font-size: 13px;
+  color: #6b4d3a;
+  letter-spacing: 0.04em;
+}
+
+/* ==========================================================================
+   CHAPTER II — SKILLS: EDITORIAL TECHNICAL ARCHIVE & CATEGORY ACCENTS
+   ========================================================================== */
+.skills-editorial-flow {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 130, 45, 0.4) transparent;
+}
+
+.skills-editorial-flow::-webkit-scrollbar {
+  width: 5px;
+}
+.skills-editorial-flow::-webkit-scrollbar-track {
+  background: transparent;
+}
+.skills-editorial-flow::-webkit-scrollbar-thumb {
+  background: rgba(180, 130, 45, 0.4);
+  border-radius: 3px;
+}
+
+/* Category Group Section */
+.skill-category-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.skill-category-group-header {
+  margin-bottom: 10px;
+}
+
+.skill-category-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.skill-category-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.skill-category-title-text {
+  font-family: var(--font-serif-master);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.skill-category-count-badge {
+  font-family: var(--font-serif-master);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  border: 1px solid;
+  margin-left: auto;
+}
+
+.skill-category-accent-rule {
+  width: 100%;
+  height: 1.5px;
+  border: none;
+  margin-top: 3px;
+}
+
+/* Category Entries List */
+.skill-category-entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Individual Skill Entry Card */
+.skill-entry-card {
+  position: relative;
+  padding: 4px 2px 6px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skill-entry-headline-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skill-name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.skill-name-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.skill-entry-gem {
+  font-size: 11px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.skill-name-headline {
+  font-family: var(--font-serif-master);
+  font-size: clamp(16px, 1.3vw, 18.5px);
+  font-weight: 800;
+  color: #1a0408;
+  letter-spacing: 0.02em;
+  margin: 0;
+  line-height: 1.25;
+}
+
+/* Proficiency / Focus Display */
+.skill-proficiency-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.skill-meta-caption {
+  font-family: var(--font-serif-master);
+  font-size: 13px !important;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #482307;
+  text-transform: uppercase;
+}
+
+.skill-proficiency-badge-value {
+  font-family: var(--font-sans-ui);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 2.5px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+/* Context & Details Prose */
+.skill-context-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 3px;
+  padding-left: 19px;
+}
+
+.skill-context-prose {
+  font-family: var(--font-serif-body);
+  font-size: 17px !important;
+  line-height: 1.65;
+  color: #120402 !important;
+  font-weight: 550 !important;
+}
+
+/* Tools & Technologies Insignia Cluster */
+.skill-tools-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+  padding-left: 19px;
+}
+
+.skill-tools-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.skill-tool-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: rgba(140, 95, 35, 0.06);
+  border: 1px solid rgba(140, 95, 35, 0.28);
+  border-radius: 4px;
+  transition: all 0.18s ease;
+}
+
+.skill-tool-badge:hover {
+  background: rgba(140, 95, 35, 0.12);
+  border-color: rgba(140, 95, 35, 0.5);
+}
+
+.skill-tool-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.skill-tool-name {
+  font-family: var(--font-sans-ui);
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #2b080f;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Editorial Divider between skills */
+.editorial-skill-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(140, 95, 35, 0.4) 0%, rgba(140, 95, 35, 0.1) 80%, transparent 100%);
+  border: none;
+  margin: 18px 0 14px 0;
+}
+
+/* Backward compatibility fallbacks */
+.cat-cybersecurity { color: #103964; background: rgba(16, 57, 100, 0.08); border: 1px solid rgba(16, 57, 100, 0.32); }
+.cat-python { color: #0a525d; background: rgba(10, 82, 93, 0.08); border: 1px solid rgba(10, 82, 93, 0.32); }
+.cat-devops { color: #3c1860; background: rgba(60, 24, 96, 0.08); border: 1px solid rgba(60, 24, 96, 0.32); }
+.cat-ai { color: #281c61; background: rgba(40, 28, 97, 0.08); border: 1px solid rgba(40, 28, 97, 0.32); }
+.cat-web { color: #4a0f1b; background: rgba(74, 15, 27, 0.08); border: 1px solid rgba(74, 15, 27, 0.32); }
+.cat-general { color: #783d09; background: rgba(120, 61, 9, 0.08); border: 1px solid rgba(120, 61, 9, 0.32); }
+.skill-proficiency-badge { font-family: var(--font-sans-ui); font-size: 11px; font-weight: 600; color: #783d09; background: rgba(140, 95, 35, 0.08); padding: 2px 7px; border-radius: 3px; border: 1px solid rgba(140, 95, 35, 0.3); }
+.skill-context-desc { font-family: var(--font-serif-body); font-size: 14px; line-height: 1.6; color: #23160e; margin-top: 5px; }
+
+/* ==========================================================================
+   CHAPTER III — PROJECTS: CURATED CASE STUDIES & ADAPTIVE IMAGES
+   ========================================================================== */
+/* ==========================================================================
+   CHAPTER III — PROJECTS: ARCHIVES PORTAL, SEARCH, & CASE STUDIES
+   ========================================================================== */
+
+/* 1. Projects Portal & Category Directory */
+.projects-portal-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 130, 45, 0.4) transparent;
+}
+
+.projects-portal-container::-webkit-scrollbar {
+  width: 5px;
+}
+.projects-portal-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.projects-portal-container::-webkit-scrollbar-thumb {
+  background: rgba(180, 130, 45, 0.4);
+  border-radius: 3px;
+}
+
+.portal-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.portal-kicker {
+  font-family: var(--font-serif-master);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #783d09;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.portal-headline {
+  font-family: var(--font-serif-master);
+  font-size: clamp(20px, 1.85vw, 25px);
+  font-weight: 800;
+  color: #1f0409;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.portal-subtext {
+  font-family: var(--font-serif-body);
+  font-size: 14px;
+  font-style: italic;
+  color: #23160e;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+/* Polished Book-Aesthetic Search & Filter Suite */
+.project-search-container {
+  width: 100%;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-search-input-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.project-search-input-wrap .search-icon {
+  position: absolute;
+  left: 11px;
+  width: 15px;
+  height: 15px;
+  color: #845417;
+  pointer-events: none;
+}
+
+.project-search-input {
+  width: 100%;
+  padding: 8px 32px 8px 34px;
+  font-family: var(--font-serif-body);
+  font-size: 13.5px;
+  color: #1a0408;
+  background: rgba(255, 252, 245, 0.85);
+  border: 1.5px solid rgba(180, 130, 45, 0.5);
+  border-radius: 4px;
+  outline: none;
+  box-shadow: inset 0 1px 4px rgba(40, 20, 5, 0.08);
+  transition: all 0.2s ease;
+}
+
+.project-search-input:focus {
+  border-color: #845417;
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(180, 130, 45, 0.2);
+}
+
+.project-search-input::placeholder {
+  color: #8c6f5a;
+  font-style: italic;
+}
+
+.project-search-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: #845417;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.project-search-clear:hover {
+  color: #1a0408;
+  background: rgba(180, 130, 45, 0.15);
+}
+
+/* Category Filter Chips */
+.project-filter-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.project-filter-chip {
+  font-family: var(--font-serif-master);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  background: rgba(140, 95, 35, 0.06);
+  border: 1px solid rgba(140, 95, 35, 0.35);
+  border-radius: 3px;
+  color: #633308;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.project-filter-chip:hover {
+  background: rgba(140, 95, 35, 0.14);
+  color: #1a0408;
+  border-color: #845417;
+}
+
+.project-filter-chip.active {
+  background: #2b080f;
+  color: #faeac3;
+  border-color: #d4af37;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Search Results Shelf */
+.project-search-results {
+  background: rgba(255, 252, 245, 0.96);
+  border: 1.5px solid rgba(180, 130, 45, 0.6);
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(140, 95, 35, 0.15);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.18s ease;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover {
+  background: rgba(140, 95, 35, 0.1);
+}
+
+.search-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.search-result-title {
+  font-family: var(--font-serif-master);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1f0409;
+}
+
+.search-result-cat {
+  font-family: var(--font-serif-master);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #783d09;
+  text-transform: uppercase;
+}
+
+.search-result-arrow {
+  font-size: 12px;
+  color: #845417;
+  font-weight: 700;
+}
+
+/* Category Plaques Shelf */
+.portal-categories-shelf {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+}
+
+.category-plaque-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(140, 95, 35, 0.05);
+  border: 1.5px solid rgba(180, 130, 45, 0.4);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.category-plaque-card:hover {
+  background: rgba(140, 95, 35, 0.12);
+  border-color: #845417;
+  transform: translateX(2px);
+  box-shadow: 0 4px 14px rgba(35, 10, 15, 0.12);
+}
+
+.plaque-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plaque-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plaque-title {
+  font-family: var(--font-serif-master);
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #1f0409;
+  letter-spacing: 0.04em;
+}
+
+.plaque-count-badge {
+  font-family: var(--font-serif-master);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #783d09;
+  background: rgba(140, 95, 35, 0.08);
+  border: 1px solid rgba(140, 95, 35, 0.28);
+  padding: 2px 7px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.plaque-desc {
+  font-family: var(--font-serif-body);
+  font-size: 12.5px;
+  color: #23160e;
+  line-height: 1.45;
+}
+
+.btn-plaque-explore {
+  font-family: var(--font-serif-master);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2b080f;
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(160, 115, 45, 0.6);
+  padding: 4px 10px;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.category-plaque-card:hover .btn-plaque-explore {
+  background: #d4af37;
+  color: #1a0408;
+}
+
+/* ==========================================================================
+   2. Project Case-Study Presentation & Typography
+   ========================================================================== */
+.project-case-study {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 130, 45, 0.4) transparent;
+}
+
+.project-case-study::-webkit-scrollbar {
+  width: 5px;
+}
+.project-case-study::-webkit-scrollbar-track {
+  background: transparent;
+}
+.project-case-study::-webkit-scrollbar-thumb {
+  background: rgba(180, 130, 45, 0.4);
+  border-radius: 3px;
+}
+
+/* Top Meta Row (Refined Category Pill & Clean Top Margin) */
+.project-top-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(140, 95, 35, 0.2);
+}
+
+.btn-portal-back {
+  display: none !important;
+}
+
+.project-category-pill {
+  font-family: var(--font-serif-master);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6d4218;
+  background: rgba(140, 95, 35, 0.07);
+  border: 1px solid rgba(140, 95, 35, 0.25);
+  padding: 2px 9px;
+  border-radius: 12px;
+}
+
+.project-case-header {
+  margin-bottom: 10px;
+}
+
+.project-title-group {
+  margin-bottom: 7px;
+}
+
+.project-type-group {
+  margin-bottom: 6px;
+}
+
+.project-header-label {
+  font-family: var(--font-serif-master);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #783d09;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.project-title-headline {
+  font-family: var(--font-serif-master);
+  font-size: clamp(22px, 2.05vw, 28px);
+  font-weight: 800;
+  color: #1a0408;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.project-type-value,
+.project-type-subtitle {
+  font-family: var(--font-serif-master);
+  font-size: 13px;
+  font-weight: 700;
+  color: #2b080f;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.project-flourish-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 5px 0 16px 0;
+}
+
+.project-section-block {
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.project-section-block:last-child {
+  margin-bottom: 8px;
+}
+
+.project-field-label {
+  font-family: var(--font-serif-master);
+  font-size: 13px !important;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #1f0409;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.editorial-section-rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(140, 95, 35, 0.45) 0%, rgba(140, 95, 35, 0.12) 80%, transparent 100%);
+  margin: 3px 0 6px 0;
+  border: none;
+}
+
+/* Substantially Larger, Attractive Technology Badges */
+.project-tech-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 2px;
+  margin-bottom: 0;
+}
+
+.tech-tag-badge {
+  font-family: var(--font-sans-ui);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1f0409;
+  background: rgba(140, 95, 35, 0.08);
+  border: 1px solid rgba(140, 95, 35, 0.38);
+  border-radius: 4px;
+  padding: 4px 11px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 3px rgba(40, 20, 5, 0.06);
+}
+
+/* Overview & Narrative Typography */
+.project-overview-content {
+  font-family: var(--font-serif-body);
+  font-size: 17px !important;
+  line-height: 1.7;
+  color: #23160e;
+  font-weight: 550 !important;
+  text-align: justify;
+  margin-top: 0;
+}
+
+/* Key Features Bulleted List */
+.project-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 2px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.project-feature-item {
+  font-family: var(--font-serif-body);
+  font-size: 16px !important;
+  line-height: 1.6;
+  color: #23160e;
+  font-weight: 550 !important;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.feature-bullet-gem {
+  color: #845417;
+  font-size: 11px;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+
+/* Architecture & Technical Approach */
+.project-arch-content {
+  font-family: var(--font-serif-body);
+  font-size: clamp(14.5px, 1.15vw, 16px);
+  line-height: 1.7;
+  color: #23160e;
+  font-weight: 480;
+  text-align: justify;
+  margin-top: 0;
+}
+
+/* Detailed Specifications Callout */
+.project-specs-callout {
+  padding: 8px 12px;
+  border-left: 2.5px solid #845417;
+  background: linear-gradient(90deg, rgba(140, 95, 35, 0.07) 0%, rgba(140, 95, 35, 0.01) 100%);
+  border-radius: 0 4px 4px 0;
+  margin: 3px 0 0 0;
+}
+
+.specs-editorial-content {
+  font-family: var(--font-serif-body);
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.65;
+  color: #23160e;
+}
+
+/* ==========================================================================
+   3. Adaptive Project Image Presentation & Enlarge
+   ========================================================================== */
+
+/* Horizontal Architecture Diagram */
+.project-image-horizontal-wrapper {
+  width: 100%;
+  margin: 0 0 24px 0;
+  cursor: pointer;
+  display: block;
+}
+
+.project-image-horizontal-wrapper .project-image-frame {
+  width: 100%;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(35, 10, 15, 0.18);
+  border: 1.5px solid rgba(180, 130, 45, 0.55);
+  background: #120407;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.project-image-horizontal-wrapper:hover .project-image-frame {
+  transform: scale(1.015);
+  box-shadow: 0 8px 24px rgba(35, 10, 15, 0.28);
+}
+
+.project-img-wide {
+  width: 100%;
+  max-height: clamp(190px, 24vh, 260px);
+  min-height: 100px;
+  object-fit: contain;
+  display: block;
+  background: #0e0306;
+}
+
+.project-image-frame .cert-zoom-cue {
+  bottom: 8px;
+  right: 8px;
+  padding: 3px 8px;
+  font-size: 9.5px;
+  gap: 5px;
+}
+
+/* Vertical Image (Portrait / Mobile Screenshot) */
+.project-image-vertical-wrapper {
+  float: right;
+  margin: 2px 0 12px 14px;
+  width: clamp(140px, 16vw, 195px);
+  max-width: 48%;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.portrait-gilded-casing {
+  background: #120407;
+  border: 2px solid rgba(212, 175, 55, 0.7);
+  border-radius: 5px;
+  padding: 3px;
+  box-shadow: 0 8px 24px rgba(35, 10, 15, 0.24);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.22s ease;
+}
+
+.project-image-vertical-wrapper:hover .portrait-gilded-casing {
+  transform: scale(1.02);
+}
+
+.project-img-portrait {
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  display: block;
+  border-radius: 3px;
+  background: #ffffff;
+}
+
+/* Clearfix for floating portrait image */
+.project-case-study::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Dedicated Action Buttons */
+.project-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 4px;
+  clear: both;
+}
+
+.btn-book-action {
+  font-family: var(--font-serif-master);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2b080f;
+  background: linear-gradient(135deg, rgba(248, 237, 206, 0.95) 0%, rgba(212, 175, 55, 0.55) 100%);
+  border: 1px solid rgba(160, 115, 45, 0.7);
+  padding: 7px 14px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(40, 20, 5, 0.12);
+  transition: all 0.22s ease;
+  cursor: pointer;
+}
+
+.btn-book-action:hover {
+  background: linear-gradient(135deg, #f8e19e 0%, #d4af37 100%);
+  color: #1a0408;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 20, 5, 0.22);
+}
+
+.btn-book-action svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+}
+
+/* ==========================================================================
+   CHAPTER IV — CERTIFICATES: PRESTIGIOUS SHOWCASE & LIGHTBOX
+   ========================================================================== */
+.certificate-showcase {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  min-height: 100%;
+  padding-bottom: 24px;
+}
+
+.cert-case-header {
+  margin-bottom: 6px;
+  width: 100%;
+}
+
+.cert-kicker {
+  font-family: var(--font-serif-master);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #874d15;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.cert-title-headline {
+  font-family: var(--font-serif-master);
+  font-size: clamp(20px, 1.8vw, 26px);
+  font-weight: 700;
+  color: #1f0409;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.cert-badge-wrapper {
+  position: relative;
+  margin: 10px auto 16px auto;
+  width: 100%;
+  max-width: clamp(320px, 36vw, 460px);
+  cursor: pointer;
+}
+
+.cert-badge-frame {
+  padding: 6px;
+  background: linear-gradient(135deg, #faeac3 0%, #d4af37 40%, #845417 80%, #d4af37 100%);
+  border-radius: 6px;
+  box-shadow: 0 10px 28px rgba(35, 10, 15, 0.24), 0 2px 8px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cert-badge-wrapper:hover .cert-badge-frame {
+  transform: scale(1.02);
+  box-shadow: 0 12px 32px rgba(35, 10, 15, 0.32);
+}
+
+.cert-badge-img {
+  display: block;
+  width: 100%;
+  max-height: clamp(205px, 27vh, 270px);
+  object-fit: contain;
+  border-radius: 3px;
+  background: #ffffff;
+}
+
+.cert-zoom-cue {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(24, 4, 8, 0.92);
+  color: #faeac3;
+  font-family: var(--font-serif-master);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 3px;
+  border: 1px solid rgba(212, 175, 55, 0.85);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cert-zoom-cue svg {
+  width: 13px;
+  height: 13px;
+}
+
+.cert-text-crest-frame {
+  margin: 12px auto 16px auto;
+  padding: 18px 28px;
+  background: rgba(140, 95, 35, 0.06);
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #845417;
+}
+
+.cert-heraldic-crest {
+  width: 42px;
+  height: 42px;
+  stroke: #845417;
+}
+
+.cert-crest-label {
+  font-family: var(--font-serif-master);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #783d09;
+}
+
+.cert-details-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 6px;
+}
+
+.cert-field-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 3px;
+  width: 100%;
+}
+
+.cert-field-label {
+  font-family: var(--font-serif-master);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #783d09;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.cert-field-value {
+  font-family: var(--font-serif-master);
+  font-size: clamp(16px, 1.35vw, 19.5px);
+  font-weight: 800;
+  color: #1a0408;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+
+.cert-field-date {
+  font-family: var(--font-serif-master);
+  font-size: 15px;
+  font-weight: 700;
+  color: #2c0e14;
+  background: rgba(140, 95, 35, 0.1);
+  border: 1px solid rgba(140, 95, 35, 0.35);
+  border-radius: 4px;
+  padding: 3px 14px;
+  display: inline-block;
+}
+
+.cert-desc-box {
+  font-family: var(--font-serif-body);
+  font-size: clamp(14px, 1.1vw, 15.5px);
+  line-height: 1.65;
+  color: #1e0d07;
+  text-align: justify;
+  text-align-last: center;
+  margin-top: 4px;
+  font-style: normal;
+  font-weight: 450;
+  width: 100%;
+}
+
+.cert-action-wrap {
+  margin-top: 6px;
+  padding-top: 8px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Certificate Lightbox Modal — Maximized Viewport Coverage (85-95vw / 85-92vh) */
+.cert-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  animation: fadeInModal 0.2s ease forwards;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cert-lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 2, 5, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+
+.cert-lightbox-content {
+  position: relative;
+  z-index: 2;
+  max-width: 96vw;
+  max-height: 96vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cert-lightbox-close {
+  position: absolute;
+  top: -16px;
+  right: -16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #26050c;
+  border: 2px solid #d4af37;
+  color: #faeac3;
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.85);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.cert-lightbox-close:hover {
+  transform: scale(1.1);
+  background: #d4af37;
+  color: #1a0307;
+}
+
+.cert-lightbox-frame {
+  padding: 5px;
+  background: linear-gradient(135deg, #faeac3 0%, #d4af37 40%, #845417 80%, #d4af37 100%);
+  border-radius: 6px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 235, 175, 0.4);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 95vw;
+  max-height: 91vh;
+}
+
+.cert-lightbox-img {
+  max-width: 93vw;
+  max-height: 87vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 3px;
+  background: #ffffff;
+}
+
+.cert-lightbox-caption {
+  margin-top: 8px;
+  font-family: var(--font-serif-master);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #faeac3;
+  text-align: center;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+  max-width: 90vw;
+}
+
+/* ==========================================================================
+   CHAPTER V — EDUCATION: ACADEMIC FOUNDATION & HERALDIC COMPOSITION
+   ========================================================================== */
+.education-showcase {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 100%;
+}
+
+.edu-case-header {
+  margin-bottom: 8px;
+}
+
+.edu-institution-label {
+  font-family: var(--font-serif-master);
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.22em;
+  color: #7b4a14;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.edu-institution-name {
+  font-family: var(--font-serif-master);
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #120402 !important;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.edu-degree-headline {
+  font-family: var(--font-serif-master);
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #4a131b;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.edu-period-tag {
+  font-family: var(--font-sans-ui);
+  font-size: 13px !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #633a0c;
+  background: rgba(140, 95, 35, 0.08);
+  border: 1px solid rgba(140, 95, 35, 0.28);
+  border-radius: 3px;
+  padding: 2.5px 8px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.edu-highlights-card {
+  padding: 8px 14px;
+  border-left: 2px solid #845417;
+  background: linear-gradient(90deg, rgba(140, 95, 35, 0.07) 0%, transparent 100%);
+  border-radius: 0 4px 4px 0;
+  font-family: var(--font-serif-body);
+  font-size: 16px !important;
+  line-height: 1.6;
+  color: #120402 !important;
+  margin-bottom: 10px;
+}
+
+.edu-action-wrap {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.flipping-3d-leaf {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 50%;
+  width: calc(50% - 18px);
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  z-index: 35;
+  pointer-events: none;
+}
+
+.flipping-3d-leaf.flip-forward {
+  animation: desktopFlipForward 0.52s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes desktopFlipForward {
+  0% {
+    transform: rotateY(0deg);
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+  }
+  50% {
+    transform: rotateY(-90deg) scale(1.015);
+    filter: drop-shadow(-12px 20px 32px rgba(0, 0, 0, 0.65));
+  }
+  100% {
+    transform: rotateY(-180deg);
+    filter: drop-shadow(-4px 4px 12px rgba(0, 0, 0, 0.35));
+  }
+}
+
+.flipping-3d-leaf.flip-backward {
+  animation: desktopFlipBackward 0.52s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes desktopFlipBackward {
+  0% {
+    transform: rotateY(-180deg);
+    filter: drop-shadow(-4px 4px 12px rgba(0, 0, 0, 0.35));
+  }
+  50% {
+    transform: rotateY(-90deg) scale(1.015);
+    filter: drop-shadow(12px 20px 32px rgba(0, 0, 0, 0.65));
+  }
+  100% {
+    transform: rotateY(0deg);
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+  }
+}
+
+.leaf-side {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, #f7eedb 0%, #ebe0ca 60%, #dcceb4 100%);
+  border: 1px solid rgba(140, 95, 35, 0.35);
+  box-shadow: inset 0 0 28px rgba(140, 95, 35, 0.18), 4px 6px 20px rgba(0, 0, 0, 0.45);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 2px 6px 6px 2px;
+  overflow: hidden;
+}
+
+.leaf-side::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(140, 95, 35, 0.28);
+  pointer-events: none;
+}
+
+.leaf-front {
+  transform: rotateY(0deg);
+}
+
+.leaf-back {
+  transform: rotateY(180deg);
+  border-radius: 6px 2px 2px 6px;
+  background: radial-gradient(ellipse at 50% 50%, #f7eedb 0%, #ebe0ca 60%, #dcceb4 100%);
+}
+
+
+/* --------------------------------------------------------------------------
+   B2. MOBILE JOTTER CHASSIS (Hidden on Desktop & Tablet)
+   -------------------------------------------------------------------------- */
+.mobile-jotter-chassis {
+  display: none;
+}
+
+
+/* ==========================================================================
+   STATUS BADGE (Real-Time Chapter & Page Indicator)
+   ========================================================================== */
+.book-page-flipper-pill {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(18, 10, 12, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  padding: 6px 16px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+  z-index: 50;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.flipper-pulsing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold-foil-mid);
+  box-shadow: 0 0 8px var(--gold-foil-light);
+  animation: pulseGold 2s infinite ease-in-out;
+}
+
+@keyframes pulseGold {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--gold-foil-light); }
+}
+
+.flipper-status-message {
+  font-family: var(--font-sans-ui);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--gold-foil-light);
+  font-weight: 500;
+}
+
+
+/* ==========================================================================
+   TABLET BREAKPOINT (1024px and below) — DESKTOP/TABLET DESIGN PRESERVED
+   ========================================================================== */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .composition-stage {
+    gap: 16px;
+    padding: 20px 16px;
+  }
+
+  .navigation-sidebar {
+    width: 180px;
+    height: 520px;
+    padding: 20px 10px 14px;
+  }
+
+  .nav-item-btn {
+    padding: 7px 10px;
+    font-size: 10px;
+    gap: 8px;
+  }
+
+  .book-volume-assembly.state-closed {
+    width: clamp(300px, 42vw, 400px);
+    height: clamp(470px, 60vw, 590px);
+  }
+
+  .book-volume-assembly.state-open {
+    width: clamp(620px, 72vw, 750px);
+    height: clamp(440px, 52vw, 550px);
+  }
+}
+
+
+/* ==========================================================================
+   MOBILE BREAKPOINT (768px and below)
+   Single Large Book Page with Physical Ring-Bound Jotter Mechanism
+   Matching Approved Reference media_1788932039690.jpg
+   ========================================================================== */
+@media (max-width: 768px) {
+  body {
+    padding-top: 60px;
+    justify-content: flex-start;
+  }
+
+  .mobile-header {
+    display: flex;
+  }
+
+  .composition-stage {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: clamp(8px, 1.6vh, 14px) 6px 0;
+    min-height: auto;
+    gap: 0;
+    overflow: visible;
+  }
+
+  /* Off-Canvas Slide-In Drawer Navigation */
+  .navigation-sidebar {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    height: calc(100vh - 60px);
+    height: calc(100dvh - 60px);
+    width: 270px;
+    max-width: 82vw;
+    border-radius: 0 24px 24px 0;
+    z-index: 150;
+    transform: translateX(-100%);
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.9);
+    padding: 20px 18px 24px;
+  }
+
+  .navigation-sidebar.drawer-open {
+    transform: translateX(0);
+  }
+
+  .drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 140;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .drawer-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .book-stage-area {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1400px;
+  }
+
+  /* CLOSED BOOK ON MOBILE: Preserves master approved cover proportions */
+  .book-volume-assembly.state-closed {
+    width: clamp(260px, 76vw, 315px);
+    height: clamp(400px, 118vw, 485px);
+    margin: 0 auto;
+  }
+
+  .book-spine {
+    width: clamp(26px, 7.5vw, 32px);
+    padding: 16px 0 10px;
+  }
+
+  .spine-title-rotated {
+    font-size: 7px;
+    letter-spacing: 0.22em;
+  }
+
+  .spine-smo-cell {
+    font-size: 6.5px;
+    padding: 1px 3px;
+  }
+
+  .gold-border-outer {
+    top: 7px;
+    bottom: 7px;
+    left: 8px;
+    right: 7px;
+  }
+
+  .gold-border-inner {
+    inset: 4px;
+  }
+
+  .cover-layout-content {
+    padding: 10px 6px;
+  }
+
+  .smo-badge-text {
+    font-size: 9.5px;
+  }
+
+  .sub-title-text {
+    font-size: 7px;
+  }
+
+  .name-tier {
+    font-size: clamp(19px, 5.8vw, 25px);
+  }
+
+  .tier-oluwatobi {
+    font-size: clamp(14px, 4.2vw, 19px);
+  }
+
+  .cover-tagline-strip {
+    font-size: clamp(6px, 1.8vw, 7.5px);
+    gap: 3px;
+  }
+
+  .shield-vector {
+    width: 36px;
+    height: 44px;
+  }
+
+  .cover-philosophical-quote {
+    font-size: clamp(11px, 3.2vw, 12.5px);
+    line-height: 1.32;
+    max-width: 94%;
+  }
+
+  /* HIDE TWO-PAGE DESKTOP SPREAD ON MOBILE */
+  .two-page-chassis {
+    display: none !important;
+  }
+
+  /* SHOW MOBILE RING-BOUND JOTTER CHASSIS ON MOBILE */
+  .mobile-jotter-chassis {
+    display: flex !important;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    overflow: visible;
+  }
+
+  /* OPEN STATE DIMENSIONS ON MOBILE: Extended downward to fill vertical viewport, keeping top exact */
+  .book-volume-assembly.state-open {
+    width: clamp(310px, 88vw, 356px);
+    height: calc(100vh - 124px);
+    height: calc(100dvh - 124px);
+    max-height: 740px;
+    margin: 0 auto;
+  }
+
+  .open-book-spread {
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 8px;
+  }
+
+  /* Deep Burgundy Leather Casing Backing */
+  .jotter-casing-backing {
+    position: absolute;
+    inset: -6px -8px -6px -8px;
+    background: radial-gradient(circle at 60% 40%, #3a0e16 0%, #200408 60%, #120104 100%);
+    border-radius: 12px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.95), inset 0 0 18px rgba(0, 0, 0, 0.85);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .jotter-leather-stitch-rim {
+    position: absolute;
+    inset: 4px;
+    border: 1px dashed rgba(212, 175, 55, 0.35);
+    border-radius: 8px;
+    pointer-events: none;
+  }
+
+  /* Left Ring-Binding Spine Mechanism */
+  .jotter-ring-spine {
+    position: relative;
+    width: 38px;
+    height: 100%;
+    z-index: 12;
+    flex-shrink: 0;
+    pointer-events: none;
+  }
+
+  .ring-spine-leather-edge {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 22px;
+    background: linear-gradient(90deg, #180306 0%, #3d1018 70%, #150205 100%);
+    border-radius: 8px 0 0 8px;
+    box-shadow: inset 1px 0 3px rgba(255, 230, 160, 0.15), inset -2px 0 6px rgba(0, 0, 0, 0.85);
+  }
+
+  .ring-spine-inner-shadow {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: -10px;
+    width: 24px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.75) 0%, rgba(20, 5, 0, 0.25) 60%, transparent 100%);
+  }
+
+  /* 8 Circular Antique Brass Rings Stack */
+  .rings-vertical-stack {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 18px 0;
+  }
+
+  .jotter-ring-item {
+    position: relative;
+    height: 18px;
+    width: 38px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Metallic Brass Ring Loop */
+  .brass-ring-loop {
+    position: absolute;
+    left: 10px;
+    width: 24px;
+    height: 8px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #52340b 0%, #9e792f 25%, #ffe699 50%, #9e792f 75%, #3d2205 100%);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.85), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+    border-top: 1px solid rgba(255, 240, 180, 0.85);
+    border-bottom: 1px solid rgba(40, 20, 5, 0.95);
+    z-index: 5;
+  }
+
+  /* Circular Punched Hole in Parchment */
+  .ring-paper-hole {
+    position: absolute;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #1b060a;
+    box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.95), 0 0 1px rgba(140, 95, 35, 0.6);
+    z-index: 2;
+  }
+
+  /* Large Single Parchment Page Leaf */
+  .jotter-page-leaf {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 50%, #f7eedb 0%, #ede1c8 65%, #ddceb3 100%);
+    border-radius: 2px 6px 6px 2px;
+    box-shadow: 4px 6px 18px rgba(0, 0, 0, 0.65), inset 0 0 30px rgba(120, 85, 35, 0.22);
+    overflow: visible;
+    z-index: 6;
+  }
+
+  .jotter-parchment-sheet {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 10px 10px 10px 14px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .jotter-spine-shadow {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 28px;
+    background: linear-gradient(90deg, rgba(20, 6, 2, 0.4) 0%, rgba(50, 20, 5, 0.15) 55%, transparent 100%);
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* Double Gold Decorative Border with 4 Victorian Filigree Corners */
+  .jotter-gold-border-outer {
+    position: relative;
+    flex: 1;
+    border: 1.2px solid rgba(160, 115, 45, 0.65);
+    padding: 4px;
+    box-shadow: inset 0 0 6px rgba(120, 80, 30, 0.15);
+  }
+
+  .jotter-gold-border-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border: 0.8px solid rgba(160, 115, 45, 0.45);
+    padding: 10px 8px 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .jotter-corner-accent {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+    filter: drop-shadow(0 0 2px rgba(180, 130, 45, 0.4));
+  }
+
+  .corner-tl { top: -2px; left: -2px; }
+  .corner-tr { top: -2px; right: -2px; transform: scaleX(-1); }
+  .corner-bl { bottom: -2px; left: -2px; transform: scaleY(-1); }
+  .corner-br { bottom: -2px; right: -2px; transform: scale(-1); }
+
+  /* Page Content Layout Grid */
+  .jotter-page-body-grid {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Top Header: CHAPTER I with Horizontal Flourish and Diamond Gem */
+  .jotter-header-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 100%;
+  }
+
+  .jotter-chapter-numeral {
+    font-family: var(--font-serif-master);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    color: #845417;
+  }
+
+  .jotter-header-flourish {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 75%;
+    max-width: 180px;
+    margin: 1px 0;
+  }
+
+  .h-flourish-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(140, 95, 35, 0.6), transparent);
+  }
+
+  .h-flourish-diamond {
+    font-size: 8px;
+    color: #845417;
+    line-height: 1;
+  }
+
+  .jotter-section-title {
+    font-family: var(--font-serif-master);
+    font-size: 13.5px;
+    letter-spacing: 0.16em;
+    color: #350d14;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  /* Content Canvas (Generous uncrowded space) */
+  .jotter-content-canvas {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 12px 6px;
+  }
+
+  .jotter-arch-card {
+    width: 100%;
+    max-width: 220px;
+    border: 1px dashed rgba(140, 95, 35, 0.4);
+    border-radius: 4px;
+    padding: 14px 10px;
+    background: rgba(140, 95, 35, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .jotter-arch-icon-wrap {
+    width: 28px;
+    height: 28px;
+    color: #845417;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .jotter-arch-icon-wrap svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .jotter-arch-headline {
+    font-family: var(--font-serif-master);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: #350d14;
+    font-weight: 700;
+  }
+
+  .jotter-arch-caption {
+    font-family: var(--font-sans-ui);
+    font-size: 8.5px;
+    letter-spacing: 0.1em;
+    color: #6b4d3a;
+  }
+
+  .jotter-arch-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .arch-line {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(140, 95, 35, 0.16);
+  }
+
+  .line-1 { width: 90%; margin: 0 auto; }
+  .line-2 { width: 75%; margin: 0 auto; }
+  .line-3 { width: 50%; margin: 0 auto; }
+
+  /* Footer: ◆ PAGE 1 OF 1 ◆ */
+  .jotter-footer-block {
+    width: 100%;
+    padding-top: 4px;
+  }
+
+  .jotter-footer-flourish {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .f-flourish-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(140, 95, 35, 0.45), transparent);
+  }
+
+  .f-flourish-tag {
+    font-family: var(--font-serif-master);
+    font-size: 8.5px;
+    letter-spacing: 0.22em;
+    color: #845417;
+    font-weight: 600;
+  }
+
+  /* Right Edge Physical Paper Stack */
+  .jotter-paper-stack {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    right: -7px;
+    width: 7px;
+    background: repeating-linear-gradient(
+      180deg,
+      #ded4c3 0px,
+      #cfbeaa 1px,
+      #ebe2d5 2px,
+      #bfae98 3px
+    );
+    border-radius: 0 3px 3px 0;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+  }
+
+  /* Right Edge Burgundy Leather Turn Tab (From reference image) */
+  .jotter-turn-tab {
+    position: absolute;
+    top: 50%;
+    right: -16px;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 44px;
+    background: linear-gradient(90deg, #2b080f 0%, #4a121d 60%, #200408 100%);
+    clip-path: polygon(0 0, 65% 15%, 100% 50%, 65% 85%, 0 100%);
+    border: 1px solid rgba(212, 175, 55, 0.75);
+    border-left: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-foil-mid);
+    padding-left: 2px;
+    box-shadow: 3px 2px 8px rgba(0, 0, 0, 0.8);
+    cursor: pointer;
+    z-index: 15;
+    transition: all 0.25s ease;
+  }
+
+  .jotter-turn-tab svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .jotter-turn-tab:active {
+    transform: translateY(-50%) scale(0.94);
+  }
+
+  /* Click Zones on Mobile Page Disabled - Navigation restricted to arrows */
+  .jotter-click-zone {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  /* Mobile 3D Page Turn Animation */
+  .mobile-flipping-leaf {
+    position: absolute;
+    inset: 0 0 0 38px;
+    transform-style: preserve-3d;
+    transform-origin: left center;
+    z-index: 25;
+    pointer-events: none;
+  }
+
+  .mobile-flipping-leaf.flip-forward {
+    animation: mobileFlipForward 0.52s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes mobileFlipForward {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(-180deg); }
+  }
+
+  .mobile-flipping-leaf.flip-backward {
+    animation: mobileFlipBackward 0.52s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes mobileFlipBackward {
+    0% { transform: rotateY(-180deg); }
+    100% { transform: rotateY(0deg); }
+  }
+
+  .mobile-leaf-face {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, #f7eedb 0%, #ede1c8 65%, #ddceb3 100%);
+    border-radius: 2px 6px 6px 2px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: 4px 6px 18px rgba(0, 0, 0, 0.65);
+  }
+
+  .mobile-leaf-face.leaf-back {
+    transform: rotateY(180deg);
+  }
+
+  /* Mobile Navigation Arrows (Comfortably positioned on sides and vertically centered with book) */
+  .nav-flipper-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    z-index: 60;
+  }
+
+  .nav-flipper-arrow svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .arrow-left {
+    left: 6px;
+  }
+
+  .arrow-right {
+    right: 6px;
+  }
+
+  /* Page/Chapter Indicator: Sits with small, intentional spacing right below the book */
+  .book-page-flipper-pill {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    margin: 8px auto 12px auto;
+    font-size: 9px;
+    padding: 5px 14px;
+  }
+
+  /* Mobile Editorial Flow for Chapters */
+  .jotter-content-canvas.has-editorial-flow,
+  .jotter-content-canvas:has(.about-editorial-story),
+  .jotter-content-canvas:has(.skills-editorial-flow),
+  .jotter-content-canvas:has(.project-case-study),
+  .jotter-content-canvas:has(.certificate-showcase),
+  .jotter-content-canvas:has(.education-showcase) {
+    justify-content: flex-start;
+    align-items: stretch;
+    text-align: left;
+    padding: 6px 4px 4px 4px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .jotter-content-canvas.has-editorial-flow::-webkit-scrollbar,
+  .jotter-content-canvas:has(.about-editorial-story)::-webkit-scrollbar {
+    display: none;
+  }
+
+  .jotter-content-canvas .about-editorial-story {
+    min-height: auto;
+    width: 100%;
+  }
+
+  .jotter-content-canvas .about-story-header {
+    margin-bottom: 6px;
+  }
+
+  .jotter-content-canvas .about-story-kicker {
+    font-size: 8px;
+    letter-spacing: 0.16em;
+    margin-bottom: 2px;
+  }
+
+  .jotter-content-canvas .about-story-heading {
+    font-size: 13.5px;
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+
+  .jotter-content-canvas .about-story-divider {
+    margin: 4px 0 6px 0;
+  }
+
+  .jotter-content-canvas .about-portrait-vignette {
+    float: right;
+    width: clamp(88px, 28vw, 108px);
+    max-width: 44%;
+    margin: 2px 0 6px 10px;
+  }
+
+  .jotter-content-canvas .about-portrait-vignette.no-body-portrait {
+    float: none;
+    margin: 6px auto;
+    max-width: 130px;
+    width: 110px;
+  }
+
+  .jotter-content-canvas .portrait-gilded-casing {
+    padding: 2.5px;
+    box-shadow: 0 4px 12px rgba(35, 10, 15, 0.22);
+  }
+
+  .jotter-content-canvas .about-story-text-flow {
+    font-size: 15px !important;
+    line-height: 1.58;
+    color: #120402 !important;
+    font-weight: 600 !important;
+  }
+
+  .jotter-content-canvas .about-story-text-flow p {
+    margin-bottom: 6px;
+    text-align: left;
+  }
+
+  .jotter-content-canvas .about-story-lead::first-letter {
+    font-size: 2.3em;
+    line-height: 0.8;
+    padding: 1px 5px 0 0;
+  }
+
+  .jotter-content-canvas .about-story-highlight {
+    margin: 6px 0 4px 0;
+    padding: 5px 8px 5px 10px;
+  }
+
+  .jotter-content-canvas .highlight-text-content {
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #3b1c0c;
+    font-weight: 500;
+  }
+
+  .jotter-content-canvas .about-story-tail {
+    padding-top: 6px;
+    font-size: 7.5px;
+  }
+
+  .jotter-content-canvas .editorial-seal-plate {
+    padding: 12px 6px;
+  }
+
+  .jotter-content-canvas .seal-embossed-shield {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+  }
+
+  .jotter-content-canvas .seal-legend {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+  }
+
+  .jotter-content-canvas .seal-quote {
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+
+  /* Mobile Skills Flow */
+  .jotter-content-canvas .skills-editorial-flow {
+    gap: 14px;
+    padding-right: 2px;
+  }
+
+  .jotter-content-canvas .skill-category-title-text {
+    font-size: 11.5px;
+  }
+
+  .jotter-content-canvas .skill-name-headline {
+    font-size: clamp(15px, 4vw, 17.5px);
+  }
+
+  .jotter-content-canvas .skill-meta-caption {
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #482307;
+  }
+
+  .jotter-content-canvas .skill-proficiency-badge-value {
+    font-size: 11px;
+    padding: 2px 7px;
+  }
+
+  .jotter-content-canvas .skill-context-container {
+    padding-left: 0;
+    gap: 3px;
+    margin-top: 2px;
+  }
+
+  .jotter-content-canvas .skill-context-prose {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .jotter-content-canvas .skill-tools-container {
+    padding-left: 0;
+    margin-top: 10px;
+    gap: 5px;
+  }
+
+  .jotter-content-canvas .skill-tool-badge {
+    padding: 3px 8px;
+    gap: 6px;
+  }
+
+  .jotter-content-canvas .skill-tool-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .jotter-content-canvas .skill-tool-name {
+    font-size: 11.5px;
+  }
+
+  .jotter-content-canvas .editorial-skill-divider {
+    margin: 14px 0 10px 0;
+  }
+
+  .jotter-content-canvas .skill-item-card {
+    padding: 8px 10px;
+  }
+
+  /* Mobile Projects Flow */
+  .jotter-content-canvas .project-kicker {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+
+  .jotter-content-canvas .project-header-label {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    margin-bottom: 2px;
+  }
+
+  .jotter-content-canvas .project-title-headline {
+    font-size: clamp(16px, 4.3vw, 19.5px);
+    line-height: 1.25;
+    font-weight: 800;
+  }
+
+  .jotter-content-canvas .project-type-value,
+  .jotter-content-canvas .project-type-subtitle {
+    font-size: 11.5px;
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+  }
+
+  .jotter-content-canvas .tech-tag-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    font-weight: 600;
+  }
+
+  .jotter-content-canvas .project-image-vertical {
+    float: right;
+    width: clamp(90px, 28vw, 115px);
+    max-width: 44%;
+    margin: 2px 0 6px 10px;
+  }
+
+  .jotter-content-canvas .project-img-wide {
+    max-height: 140px;
+  }
+
+  .jotter-content-canvas .project-overview-content,
+  .jotter-content-canvas .project-arch-content {
+    font-size: 13px;
+    line-height: 1.55;
+    text-align: left;
+  }
+
+  .jotter-content-canvas .project-feature-item {
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .jotter-content-canvas .specs-editorial-content {
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .jotter-content-canvas .btn-book-action {
+    font-size: 9.5px;
+    padding: 5px 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .jotter-content-canvas .project-section-block {
+    margin-bottom: 20px;
+  }
+
+  .jotter-content-canvas .editorial-section-rule {
+    margin: 3px 0 5px 0;
+  }
+
+  .jotter-content-canvas .project-image-horizontal-wrapper {
+    margin: 0 0 20px 0;
+  }
+
+  .jotter-content-canvas .project-image-frame .cert-zoom-cue {
+    bottom: 6px;
+    right: 6px;
+    padding: 2.5px 6px;
+    font-size: 8.5px;
+  }
+
+  /* Mobile Certificates Flow */
+  .jotter-content-canvas .cert-kicker {
+    font-size: 8px;
+  }
+
+  .jotter-content-canvas .cert-title-headline {
+    font-size: 13.5px;
+  }
+
+  .jotter-content-canvas .cert-badge-wrapper {
+    max-width: 170px;
+    margin: 2px auto 6px auto;
+  }
+
+  .jotter-content-canvas .cert-badge-img {
+    max-height: 95px;
+  }
+
+  .jotter-content-canvas .cert-field-label {
+    font-size: 7.5px;
+  }
+
+  .jotter-content-canvas .cert-field-value {
+    font-size: 12px;
+  }
+
+  .jotter-content-canvas .cert-desc-box {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  /* Mobile Education Flow */
+  .jotter-content-canvas .edu-institution-label {
+    font-size: 8px;
+  }
+
+  .jotter-content-canvas .edu-institution-name {
+    font-size: 13.5px;
+  }
+
+  .jotter-content-canvas .edu-degree-headline {
+    font-size: 12.5px;
+  }
+
+  .jotter-content-canvas .edu-period-tag {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+
+  .jotter-content-canvas .edu-highlights-card {
+    font-size: 11.5px;
+    line-height: 1.5;
+    padding: 6px 10px;
+  }
+}
+
+/* Very Small Mobile (< 320px fallback only) */
+@media (max-width: 320px) {
+  .book-volume-assembly.state-closed {
+    width: 72vw;
+    height: 104vw;
+  }
+  .book-volume-assembly.state-open {
+    width: 86vw;
+    height: 130vw;
+  }
+}
+
+/* ==========================================================================
+   JOURNEY SECTION — Chronological Timeline & Milestone Detail
+   ========================================================================== */
+
+/* ── LEFT PAGE: Timeline Flow ── */
+.journey-timeline-flow {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding: 18px 20px 14px;
+  gap: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 95, 35, 0.3) transparent;
+}
+.journey-timeline-flow::-webkit-scrollbar { width: 4px; }
+.journey-timeline-flow::-webkit-scrollbar-thumb { background: rgba(140, 95, 35, 0.3); border-radius: 2px; }
+
+.journey-timeline-header {
+  text-align: center;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+.journey-tl-chapter-label {
+  font-family: var(--font-sans-ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #a0722a;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.journey-tl-section-title {
+  font-family: var(--font-serif-master);
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e0a04;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  line-height: 1.1;
+}
+.journey-tl-rule-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+.journey-tl-descriptor {
+  font-family: var(--font-serif-body);
+  font-size: 10.5px;
+  color: #7a5020;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Timeline entry list */
+.journey-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+}
+
+.journey-timeline-entry {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  cursor: default;
+  padding: 4px 0;
+}
+.journey-timeline-entry.jt-active .jt-entry-title {
+  color: #1e0a04;
+  font-weight: 800;
+}
+.journey-timeline-entry.jt-active .jt-node-dot {
+  background: #7a3a10;
+  border-color: #7a3a10;
+  box-shadow: 0 0 0 3px rgba(122, 58, 16, 0.18);
+}
+.journey-timeline-entry.jt-active .jt-node-icon svg {
+  stroke: #fff;
+}
+
+/* Node column: dot + vertical line */
+.jt-node-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 32px;
+}
+.jt-node-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(140, 95, 35, 0.5);
+  background: rgba(245, 238, 220, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+.jt-node-icon {
+  width: 13px;
+  height: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.jt-node-icon svg {
+  width: 13px;
+  height: 13px;
+  stroke: #8c5f23;
+}
+.jt-connector-line {
+  width: 2px;
+  flex: 1;
+  min-height: 14px;
+  background: linear-gradient(to bottom, rgba(140,95,35,0.4), rgba(140,95,35,0.15));
+  margin: 3px 0;
+}
+
+/* Entry text block */
+.jt-entry-content {
+  flex: 1;
+  padding-bottom: 10px;
+  min-width: 0;
+}
+.jt-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 3px;
+}
+.jt-type-label {
+  font-family: var(--font-sans-ui);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #8c5f23;
+  text-transform: uppercase;
+}
+.jt-period-tag {
+  font-family: var(--font-sans-ui);
+  font-size: 8px;
+  color: #a07840;
+  background: rgba(140,95,35,0.08);
+  border: 1px solid rgba(140,95,35,0.2);
+  border-radius: 3px;
+  padding: 1px 5px;
+  letter-spacing: 0.06em;
+}
+.jt-status-badge {
+  font-family: var(--font-sans-ui);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 1px 5px;
+  text-transform: uppercase;
+}
+.jt-entry-title {
+  font-family: var(--font-serif-master);
+  font-size: 12px;
+  font-weight: 700;
+  color: #2b140b;
+  line-height: 1.35;
+}
+
+/* ── RIGHT PAGE: Milestone Detail ── */
+.journey-detail-flow {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px 20px 14px;
+  gap: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 95, 35, 0.3) transparent;
+}
+.journey-detail-flow::-webkit-scrollbar { width: 4px; }
+.journey-detail-flow::-webkit-scrollbar-thumb { background: rgba(140, 95, 35, 0.3); border-radius: 2px; }
+
+/* Counter + type + status row */
+.journey-detail-top-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.journey-detail-counter {
+  font-family: var(--font-sans-ui);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #a07840;
+  text-transform: uppercase;
+}
+.journey-detail-type-pill {
+  font-family: var(--font-sans-ui);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  color: #5c3310;
+  background: rgba(140,95,35,0.12);
+  border: 1px solid rgba(140,95,35,0.28);
+  border-radius: 4px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+}
+.journey-detail-status-pill {
+  font-family: var(--font-sans-ui);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border: 1px solid;
+  border-radius: 4px;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+
+/* Milestone title block (underlined heading pattern) */
+.journey-detail-title-block {
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.journey-detail-heading-label {
+  font-family: var(--font-sans-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: #8c5f23;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.journey-detail-heading-rule {
+  height: 1.5px;
+  background: linear-gradient(to right, rgba(140,95,35,0.7), rgba(140,95,35,0.1));
+  border-radius: 1px;
+  margin-bottom: 6px;
+}
+.journey-detail-title {
+  font-family: var(--font-serif-master);
+  font-size: 17px;
+  font-weight: 800;
+  color: #1e0a04;
+  line-height: 1.25;
+  margin: 0 0 5px;
+  letter-spacing: 0.02em;
+}
+.journey-detail-period {
+  font-family: var(--font-sans-ui);
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #8c5f23;
+  letter-spacing: 0.1em;
+}
+
+/* Optional image */
+.journey-detail-image-wrap {
+  margin-bottom: 12px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(140,95,35,0.22);
+  flex-shrink: 0;
+  max-height: 110px;
+}
+.journey-detail-image {
+  width: 100%;
+  max-height: 110px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Section blocks: THE STORY, KEY ACHIEVEMENT, WHAT I LEARNED, NEXT STEPS */
+.journey-detail-section {
+  margin-bottom: 13px;
+  flex-shrink: 0;
+}
+.journey-detail-section:last-child {
+  margin-bottom: 0;
+}
+.journey-detail-section-label {
+  font-family: var(--font-sans-ui);
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #8c5f23;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.journey-detail-section-rule {
+  height: 1px;
+  background: linear-gradient(to right, rgba(140,95,35,0.55), rgba(140,95,35,0.08));
+  border-radius: 1px;
+  margin-bottom: 5px;
+}
+.journey-detail-body-text {
+  font-family: var(--font-serif-body);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #1e0a04;
+}
+.journey-body-para {
+  margin-top: 6px;
+}
+
+/* Key Achievement callout box */
+.journey-detail-callout-box {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: rgba(140,95,35,0.06);
+  border: 1px solid rgba(140,95,35,0.2);
+  border-left: 3px solid rgba(140,95,35,0.55);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+.journey-callout-gem {
+  font-size: 10px;
+  color: #a07840;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.journey-callout-text {
+  font-family: var(--font-serif-body);
+  font-size: 12px;
+  line-height: 1.55;
+  color: #1e0a04;
+  font-weight: 600;
+}
+
+/* Related link button row */
+.journey-detail-link-row {
+  margin-top: 12px;
+  flex-shrink: 0;
+}
+.journey-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  padding: 7px 14px;
+}
+
+/* Mobile adjustments */
+.journey-timeline-mobile .journey-tl-section-title {
+  font-size: 16px;
+}
+.journey-timeline-mobile .jt-entry-title {
+  font-size: 11px;
+}
+.journey-detail-mobile .journey-detail-title {
+  font-size: 14px;
+}
+.journey-detail-mobile .journey-detail-body-text {
+  font-size: 11.5px;
+}
+
+/* Scrollbar for journey pages (webkit) */
+.journey-timeline-flow::-webkit-scrollbar,
+.journey-detail-flow::-webkit-scrollbar {
+  width: 4px;
+}
+.journey-timeline-flow::-webkit-scrollbar-thumb,
+.journey-detail-flow::-webkit-scrollbar-thumb {
+  background: rgba(140, 95, 35, 0.28);
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   CONTACT SECTION — Luxury Two-Page Spread (Left: channels, Right: form)
+   ========================================================================== */
+
+/* Shared flow container */
+.contact-page-flow {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  padding: 18px 22px 16px;
+  gap: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 95, 35, 0.3) transparent;
+}
+.contact-page-flow::-webkit-scrollbar { width: 4px; }
+.contact-page-flow::-webkit-scrollbar-thumb { background: rgba(140, 95, 35, 0.28); border-radius: 2px; }
+
+/* ── LEFT PAGE ─────────────────────────────────────────────────────────────── */
+.contact-chapter-label {
+  font-family: var(--font-sans-ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: #a0722a;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+/* Section block: heading + rule + content */
+.contact-section-block {
+  margin-bottom: 18px;
+  flex-shrink: 0;
+}
+.contact-top-heading-block {
+  margin-bottom: 20px;
+}
+
+.contact-section-label {
+  font-family: var(--font-sans-ui);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: #8c5f23;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.contact-section-rule {
+  height: 1.5px;
+  background: linear-gradient(to right, rgba(140,95,35,0.65), rgba(140,95,35,0.08));
+  border-radius: 1px;
+  margin-bottom: 8px;
+}
+.contact-main-rule {
+  height: 2px;
+  background: linear-gradient(to right, rgba(60,20,8,0.55), rgba(140,95,35,0.12));
+  margin-bottom: 10px;
+}
+
+.contact-main-heading {
+  font-family: var(--font-serif-master);
+  font-size: 26px;
+  font-weight: 900;
+  color: #1e0a04;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  line-height: 1.1;
+}
+.contact-intro-text {
+  font-family: var(--font-serif-body);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #1e0a04;
+  margin: 0;
+}
+
+/* EMAIL row */
+.contact-email-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.contact-network-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: #8c5f23;
+}
+.contact-email-link {
+  font-family: var(--font-serif-master);
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e0a04;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid rgba(140,95,35,0.4);
+  transition: color 0.15s, border-color 0.15s;
+}
+.contact-email-link:hover {
+  color: #7a3a10;
+  border-color: rgba(122,58,16,0.7);
+}
+.contact-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid rgba(140,95,35,0.3);
+  border-radius: 4px;
+  padding: 4px 5px;
+  cursor: pointer;
+  color: #8c5f23;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.contact-copy-btn svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+.contact-copy-btn:hover {
+  background: rgba(140,95,35,0.1);
+  color: #5c3310;
+}
+
+/* PROFESSIONAL NETWORKS */
+.contact-networks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.contact-network-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid rgba(140,95,35,0.22);
+  border-radius: 6px;
+  background: rgba(245,238,220,0.55);
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.contact-network-link:hover {
+  background: rgba(140,95,35,0.1);
+  border-color: rgba(140,95,35,0.45);
+  transform: translateX(2px);
+}
+.contact-network-name {
+  font-family: var(--font-serif-master);
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e0a04;
+  flex: 1;
+}
+.contact-network-arrow {
+  width: 12px;
+  height: 12px;
+  color: #8c5f23;
+  flex-shrink: 0;
+}
+
+/* Closing flourish */
+.contact-flourish {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+/* ── RIGHT PAGE: SEND A MESSAGE ─────────────────────────────────────────── */
+.contact-right-flow .contact-section-block {
+  margin-bottom: 12px;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+.contact-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.contact-form-label {
+  font-family: var(--font-sans-ui);
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #8c5f23;
+  text-transform: uppercase;
+}
+.contact-form-input,
+.contact-form-textarea {
+  font-family: var(--font-serif-body);
+  font-size: 12.5px;
+  color: #1e0a04;
+  background: rgba(245,238,220,0.7);
+  border: 1px solid rgba(140,95,35,0.28);
+  border-radius: 5px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+.contact-form-input:focus,
+.contact-form-textarea:focus {
+  border-color: rgba(140,95,35,0.7);
+  background: rgba(252,246,234,0.9);
+}
+.contact-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.contact-form-actions {
+  margin-top: 4px;
+}
+.contact-send-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  padding: 8px 18px;
+  cursor: pointer;
+}
+
+/* Closing note below form */
+.contact-closing-note {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-serif-body);
+  font-size: 11px;
+  font-style: italic;
+  color: #7a5020;
+}
+
+/* Mobile */
+.contact-mobile .contact-main-heading { font-size: 20px; }
+.contact-mobile .contact-intro-text { font-size: 11.5px; }
+.contact-mobile .contact-form-input,
+.contact-mobile .contact-form-textarea { font-size: 11.5px; }
+
+/* ==========================================================================
+   GLOBAL REFINEMENT — Typography, Contrast & Spacing
+   Journey · Contact · Skills
+   Applied as targeted overrides; existing approved design is preserved.
+   ========================================================================== */
+
+/* ── SKILLS: Increase inter-skill gap ─────────────────────────────────────── */
+
+/* Gap between consecutive skill entry cards within a category */
+.skill-category-entries-list {
+  gap: 0;          /* Reset; use margin on the divider instead */
+}
+.skill-entry-card {
+  padding: 6px 2px 10px 2px;
+}
+
+/* Divider between skills — generous margin above+below */
+.editorial-skill-divider {
+  margin: 26px 0 22px 0;
+  background: linear-gradient(90deg, rgba(140,95,35,0.38) 0%, rgba(140,95,35,0.09) 80%, transparent 100%);
+}
+
+/* Skill Name label — slightly more prominent */
+.skill-name-label-kicker {
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  font-weight: 800;
+  color: #7a4e18;
+}
+
+/* Skill Name value — ensure bold and large */
+.skill-name-headline {
+  font-size: clamp(15px, 1.25vw, 17.5px);
+  font-weight: 800;
+  color: #1a0408;
+  line-height: 1.2;
+}
+
+/* Context & Application label */
+.skill-context-label-text,
+.skill-tools-label-text {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #6e3e0e;
+}
+
+/* Context prose â€” larger, darker */
+.skill-context-prose {
+  font-size: 17px !important;
+  color: #120402 !important;
+  font-weight: 550 !important;
+  line-height: 1.7;
+}
+
+/* Tools section — add breathing room before it */
+.skill-tools-container {
+  margin-top: 16px;
+}
+
+/* Tool badge â€” keep readable */
+.skill-tool-name {
+  font-size: 14px !important;
+  color: #120402 !important;
+  font-weight: 700 !important;
+}
+
+/* ── JOURNEY: Detail page typography & spacing ────────────────────────────── */
+
+/* Right page: increase font sizes and darken text */
+.journey-detail-flow {
+  padding: 18px 22px 16px;
+}
+
+/* Counter + type row */
+.journey-detail-counter {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: #9a7035;
+}
+.journey-detail-type-pill {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: #4a2208;
+  background: rgba(140,95,35,0.12);
+  border-color: rgba(140,95,35,0.3);
+}
+.journey-detail-status-pill {
+  font-size: 8.5px;
+}
+
+/* MILESTONE label */
+.journey-detail-heading-label {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.24em;
+  color: #7a4e18;
+}
+
+/* MILESTONE rule */
+.journey-detail-heading-rule {
+  height: 2px;
+  background: linear-gradient(to right, rgba(60,20,8,0.5), rgba(140,95,35,0.1));
+  margin-bottom: 7px;
+}
+
+/* Main milestone title — much larger and bolder */
+.journey-detail-title {
+  font-size: clamp(15px, 1.4vw, 19px);
+  font-weight: 900;
+  color: #160604;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+/* Period / date */
+.journey-detail-period {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #7a4e18;
+  letter-spacing: 0.12em;
+}
+
+/* Title block bottom margin */
+.journey-detail-title-block {
+  margin-bottom: 18px;
+}
+
+/* Section labels — THE STORY, KEY ACHIEVEMENT, etc. */
+.journey-detail-section-label {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  color: #7a4e18;
+  margin-bottom: 4px;
+}
+
+/* Section rule */
+.journey-detail-section-rule {
+  height: 1.5px;
+  margin-bottom: 6px;
+}
+
+/* Body text — larger and very dark */
+.journey-detail-body-text {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #160604;
+  font-weight: 450;
+}
+
+/* Callout box text */
+.journey-callout-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #160604;
+  font-weight: 600;
+}
+.journey-callout-gem {
+  font-size: 11px;
+  color: #9a7035;
+}
+
+/* SECTION SPACING: generous gap between sections, tight heading-to-content */
+.journey-detail-section {
+  margin-bottom: 18px;
+}
+.journey-detail-section:last-of-type {
+  margin-bottom: 6px;
+}
+
+/* Optional image: constrained height, no distortion */
+.journey-detail-image-wrap {
+  margin-bottom: 14px;
+  max-height: 100px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid rgba(140,95,35,0.22);
+}
+.journey-detail-image {
+  max-height: 100px;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* LEFT PAGE timeline — size up entry titles and type labels */
+.jt-entry-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #160604;
+  line-height: 1.35;
+}
+.jt-type-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: #7a4e18;
+  letter-spacing: 0.16em;
+}
+.jt-period-tag {
+  font-size: 8.5px;
+  color: #8c6630;
+  letter-spacing: 0.07em;
+}
+/* Active entry highlight — bolder */
+.journey-timeline-entry.jt-active .jt-entry-title {
+  font-size: 13.5px;
+  color: #160604;
+  font-weight: 900;
+}
+
+/* Section header text */
+.journey-tl-section-title {
+  font-size: 21px;
+  font-weight: 900;
+  color: #160604;
+}
+.journey-tl-descriptor {
+  font-size: 11px;
+  color: #6e4010;
+}
+
+/* ── CONTACT: Improved readability ────────────────────────────────────────── */
+
+/* Chapter label */
+.contact-chapter-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  color: #9a7035;
+  margin-bottom: 16px;
+}
+
+/* Main LET'S CONNECT heading */
+.contact-main-heading {
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 900;
+  color: #160604;
+  letter-spacing: 0.06em;
+  margin-bottom: 9px;
+}
+
+/* Section labels: EMAIL, PROFESSIONAL NETWORKS */
+.contact-section-label {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.24em;
+  color: #7a4e18;
+  margin-bottom: 5px;
+}
+.contact-section-rule {
+  height: 1.5px;
+  margin-bottom: 10px;
+}
+.contact-main-rule {
+  height: 2px;
+  margin-bottom: 12px;
+}
+
+/* Intro text */
+.contact-intro-text {
+  font-size: 13px;
+  line-height: 1.72;
+  color: #160604;
+  font-weight: 450;
+}
+
+/* Email link — larger and dark */
+.contact-email-link {
+  font-size: 14px;
+  font-weight: 800;
+  color: #160604;
+  letter-spacing: 0.01em;
+}
+
+/* Network link name */
+.contact-network-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #160604;
+}
+
+/* Space between section blocks */
+.contact-section-block {
+  margin-bottom: 22px;
+}
+.contact-top-heading-block {
+  margin-bottom: 24px;
+}
+
+/* RIGHT PAGE: SEND A MESSAGE */
+.contact-right-flow .contact-section-label {
+  font-size: 10px;
+  font-weight: 900;
+}
+.contact-right-flow .contact-intro-text {
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #2a1006;
+  margin-bottom: 16px !important;
+}
+
+/* Form labels — bigger and bolder */
+.contact-form-label {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  color: #7a4e18;
+}
+
+/* Form inputs — readable text */
+.contact-form-input,
+.contact-form-textarea {
+  font-size: 13px;
+  color: #160604;
+  padding: 8px 11px;
+}
+
+/* Send button — slightly more prominent */
+.contact-send-btn {
+  font-size: 11px;
+  padding: 9px 20px;
+  letter-spacing: 0.08em;
+}
+
+/* Gap between form groups */
+.contact-form {
+  gap: 12px;
+}
+
+/* Closing note */
+.contact-closing-note {
+  font-size: 12px;
+  margin-top: 14px;
+  color: #6e4010;
+}
+
+/* Mobile overrides */
+.contact-mobile .contact-main-heading { font-size: 18px; }
+.contact-mobile .contact-intro-text { font-size: 12px; }
+.contact-mobile .contact-email-link { font-size: 12.5px; }
+.contact-mobile .contact-network-name { font-size: 12.5px; }
+.contact-mobile .contact-form-input,
+.contact-mobile .contact-form-textarea { font-size: 12px; }
+
+.journey-detail-mobile .journey-detail-title { font-size: 14px; }
+.journey-detail-mobile .journey-detail-body-text { font-size: 12.5px; }
+.journey-timeline-mobile .jt-entry-title { font-size: 12px; }
+.journey-timeline-mobile .journey-tl-section-title { font-size: 17px; }
+
+/* ==========================================================================
+   REFINEMENT PATCH 2 — Fix actual class names & divider-based inter-skill gap
+   ========================================================================== */
+
+/* skill-meta-caption = SKILL NAME / CONTEXT & APPLICATION / TOOLS & TECHNOLOGIES labels */
+.skill-meta-caption {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #5c3008;
+  text-transform: uppercase;
+}
+
+/* The divider is inside the skill-entry-card, after the content.
+   Reset list gap to 0 and rely purely on divider margins for inter-skill breathing room. */
+.skill-category-entries-list {
+  gap: 0;
+}
+.editorial-skill-divider {
+  margin: 28px 0 24px 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(140,95,35,0.42) 0%, rgba(140,95,35,0.1) 80%, transparent 100%);
+  border: none;
+}
+
+/* Skill entry card: tighten internal padding, let divider create the gap */
+.skill-entry-card {
+  padding: 4px 2px 4px 2px;
+}
+
+/* context-container gap: keep heading close to its content */
+.skill-context-container {
+  gap: 3px;
+  margin-top: 4px;
+}
+
+/* Tools container: clear gap from context prose */
+.skill-tools-container {
+  margin-top: 16px;
+  gap: 5px;
+}
+
+/* ==========================================================================
+   CRITICAL ROOT FIX — Journey & Contact: unlock overflow-y scroll
+   The parchment-content-body base rule has overflow:hidden and justify:center.
+   Journey and Contact were not in the editorial :has() whitelist, so their
+   internal flow containers were being clipped and vertically centered —
+   making all text appear far smaller than its declared size.
+   ========================================================================== */
+
+/* Step 1 — Add Journey & Contact to the overflow-y:auto editorial whitelist */
+.parchment-content-body:has(.journey-timeline-flow),
+.parchment-content-body:has(.journey-detail-flow),
+.parchment-content-body:has(.contact-page-flow) {
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: left;
+  padding: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 130, 45, 0.45) rgba(140, 95, 35, 0.05);
+}
+
+/* Step 2 — Make the flow containers fill the full content area */
+.journey-timeline-flow,
+.journey-detail-flow,
+.contact-page-flow {
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+/* Step 3 — JOURNEY: Large, bold, dark typography from the source */
+
+/* LEFT PAGE — timeline */
+.journey-tl-section-title {
+  font-size: 28px !important;
+  font-weight: 900 !important;
+  color: #120402 !important;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  margin: 0 0 8px;
+}
+.journey-tl-chapter-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.22em;
+  color: #8c5f23;
+  margin-bottom: 6px;
+}
+.journey-tl-descriptor {
+  font-size: 13px !important;
+  color: #4a2208 !important;
+  font-style: italic;
+}
+.jt-entry-title {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #120402 !important;
+  line-height: 1.35;
+}
+.journey-timeline-entry.jt-active .jt-entry-title {
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  color: #120402 !important;
+}
+.jt-type-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #6e3e0e !important;
+  letter-spacing: 0.14em;
+}
+.jt-period-tag {
+  font-size: 10px !important;
+  color: #7a4e18 !important;
+  font-weight: 600;
+}
+.jt-node-dot {
+  width: 30px;
+  height: 30px;
+}
+.jt-node-icon, .jt-node-icon svg {
+  width: 14px;
+  height: 14px;
+}
+.journey-timeline-header {
+  margin-bottom: 20px;
+}
+.jt-entry-content {
+  padding-bottom: 14px;
+}
+
+/* RIGHT PAGE — detail */
+.journey-detail-counter {
+  font-size: 11px !important;
+  letter-spacing: 0.18em;
+  color: #8c5f23 !important;
+  font-weight: 700;
+}
+.journey-detail-type-pill {
+  font-size: 10px !important;
+  font-weight: 700;
+  padding: 3px 10px;
+  color: #4a2208 !important;
+}
+.journey-detail-status-pill {
+  font-size: 10px !important;
+  font-weight: 700;
+  padding: 3px 9px;
+}
+.journey-detail-heading-label {
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.22em;
+  color: #6e3e0e !important;
+}
+.journey-detail-title {
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  color: #120402 !important;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.journey-detail-period {
+  font-size: 12px !important;
+  font-weight: 700;
+  color: #6e3e0e !important;
+  letter-spacing: 0.1em;
+}
+.journey-detail-title-block {
+  margin-bottom: 20px;
+}
+.journey-detail-section-label {
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.2em;
+  color: #6e3e0e !important;
+  margin-bottom: 5px;
+}
+.journey-detail-section-rule {
+  height: 1.5px;
+  margin-bottom: 7px;
+}
+.journey-detail-body-text {
+  font-size: 15px !important;
+  line-height: 1.72 !important;
+  color: #120402 !important;
+  font-weight: 450;
+}
+.journey-body-para {
+  margin-top: 8px;
+}
+.journey-detail-callout-box {
+  padding: 10px 12px;
+}
+.journey-callout-text {
+  font-size: 15px !important;
+  line-height: 1.65;
+  color: #120402 !important;
+  font-weight: 600;
+}
+.journey-callout-gem {
+  font-size: 12px;
+}
+.journey-detail-section {
+  margin-bottom: 22px !important;
+}
+.journey-detail-image-wrap {
+  max-height: 90px;
+  margin-bottom: 16px;
+}
+.journey-detail-image {
+  max-height: 90px;
+}
+.journey-detail-top-row {
+  margin-bottom: 14px;
+  gap: 7px;
+}
+
+/* Scrollbar for journey/contact */
+.parchment-content-body:has(.journey-timeline-flow)::-webkit-scrollbar,
+.parchment-content-body:has(.journey-detail-flow)::-webkit-scrollbar,
+.parchment-content-body:has(.contact-page-flow)::-webkit-scrollbar {
+  width: 4px;
+  display: block;
+}
+.parchment-content-body:has(.journey-timeline-flow)::-webkit-scrollbar-thumb,
+.parchment-content-body:has(.journey-detail-flow)::-webkit-scrollbar-thumb,
+.parchment-content-body:has(.contact-page-flow)::-webkit-scrollbar-thumb {
+  background: rgba(180, 130, 45, 0.4);
+  border-radius: 2px;
+}
+
+/* Step 4 — CONTACT: Large, bold, dark typography from the source */
+.contact-chapter-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.22em;
+  color: #8c5f23 !important;
+  margin-bottom: 18px;
+}
+.contact-main-heading {
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  color: #120402 !important;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.contact-main-rule {
+  height: 2px !important;
+  margin-bottom: 12px;
+}
+.contact-intro-text {
+  font-size: 15px !important;
+  line-height: 1.75 !important;
+  color: #120402 !important;
+  font-weight: 450;
+}
+.contact-section-label {
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.22em;
+  color: #6e3e0e !important;
+  margin-bottom: 6px;
+}
+.contact-section-rule {
+  height: 1.5px;
+  margin-bottom: 10px;
+}
+.contact-email-link {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #120402 !important;
+}
+.contact-network-name {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #120402 !important;
+}
+.contact-section-block {
+  margin-bottom: 24px !important;
+}
+.contact-top-heading-block {
+  margin-bottom: 26px !important;
+}
+/* Right page: SEND A MESSAGE */
+.contact-right-flow .contact-section-label {
+  font-size: 11px !important;
+  font-weight: 900 !important;
+}
+.contact-right-flow .contact-intro-text {
+  font-size: 14px !important;
+  margin-bottom: 16px;
+}
+.contact-form-label {
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.2em;
+  color: #6e3e0e !important;
+}
+.contact-form-input,
+.contact-form-textarea {
+  font-size: 14px !important;
+  color: #120402 !important;
+  padding: 8px 11px;
+}
+.contact-send-btn {
+  font-size: 12px !important;
+  padding: 9px 20px;
+  font-weight: 700;
+}
+.contact-form {
+  gap: 12px;
+}
+.contact-network-link {
+  padding: 11px 13px;
+}
+
+/* Mobile: still readable, scaled down proportionally */
+@media (max-width: 768px) {
+  .journey-detail-title { font-size: 17px !important; }
+  .journey-detail-body-text { font-size: 13px !important; }
+  .journey-tl-section-title { font-size: 20px !important; }
+  .jt-entry-title { font-size: 13px !important; }
+  .contact-main-heading { font-size: 22px !important; }
+  .contact-intro-text { font-size: 13px !important; }
+  .contact-email-link { font-size: 13.5px !important; }
+  .contact-network-name { font-size: 13.5px !important; }
+  .contact-form-input, .contact-form-textarea { font-size: 13px !important; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FINAL DECISIVE TYPOGRAPHY OVERRIDES — Must be last to win all conflicts
+   Applied: all sections — About, Education, Skills, Projects, Journey, Contact
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── ABOUT ── */
+.about-story-text-flow,
+.about-story-text-flow p {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #120402 !important;
+  line-height: 1.75 !important;
+}
+
+/* ── EDUCATION ── */
+.edu-institution-label {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: #7b4a14 !important;
+}
+.edu-institution-name {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #120402 !important;
+}
+.edu-degree-headline {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #120402 !important;
+}
+.edu-period-tag {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+.edu-highlights-card {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  color: #120402 !important;
+  line-height: 1.7 !important;
+}
+
+/* ── SKILLS ── */
+.skill-meta-caption {
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.2em !important;
+  color: #5c3008 !important;
+}
+.skill-context-prose {
+  font-size: 17px !important;
+  font-weight: 550 !important;
+  color: #120402 !important;
+  line-height: 1.72 !important;
+}
+.skill-tool-name {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #120402 !important;
+}
+.skill-proficiency-badge-value {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+/* ── PROJECTS ── */
+.project-field-label {
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  color: #1f0409 !important;
+}
+.project-overview-content {
+  font-size: 17px !important;
+  font-weight: 550 !important;
+  color: #120402 !important;
+  line-height: 1.72 !important;
+}
+.project-feature-item {
+  font-size: 16px !important;
+  font-weight: 550 !important;
+  color: #120402 !important;
+}
+.project-section-block {
+  margin-bottom: 28px !important;
+}
+.editorial-section-rule {
+  margin: 2px 0 8px 0 !important;
+}
+
+/* ── JOURNEY detail right page ── */
+.journey-detail-title {
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  color: #120402 !important;
+}
+.journey-detail-section-label {
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.2em !important;
+}
+.journey-detail-body-text {
+  font-size: 17px !important;
+  font-weight: 550 !important;
+  color: #120402 !important;
+  line-height: 1.72 !important;
+}
+.jt-entry-title {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #120402 !important;
+}
+.jt-entry-meta {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+.journey-tl-section-title {
+  font-size: 26px !important;
+  font-weight: 900 !important;
+}
+
+/* ── CONTACT ── */
+.contact-main-heading {
+  font-size: 32px !important;
+  font-weight: 900 !important;
+  color: #120402 !important;
+}
+.contact-intro-text {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  color: #120402 !important;
+}
+.contact-section-label {
+  font-size: 13px !important;
+  font-weight: 900 !important;
+}
+.contact-email-link {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: #120402 !important;
+}
+.contact-network-name {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: #120402 !important;
+}
+.contact-form-label {
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.2em !important;
+}
+.contact-form-input,
+.contact-form-textarea {
+  font-size: 15px !important;
+  color: #120402 !important;
+}
+
+/* ── MOBILE — proportionally smaller but still readable ── */
+@media (max-width: 768px) {
+  .about-story-text-flow,
+  .about-story-text-flow p { font-size: 15px !important; }
+  .edu-institution-name     { font-size: 18px !important; }
+  .edu-degree-headline      { font-size: 15px !important; }
+  .edu-highlights-card      { font-size: 14px !important; }
+  .skill-context-prose      { font-size: 14px !important; }
+  .project-overview-content { font-size: 14px !important; }
+  .project-feature-item     { font-size: 13.5px !important; }
+  .journey-detail-title     { font-size: 19px !important; }
+  .journey-detail-body-text { font-size: 14px !important; }
+  .contact-main-heading     { font-size: 24px !important; }
+  .contact-intro-text       { font-size: 14px !important; }
+  .contact-email-link       { font-size: 14.5px !important; }
+  .contact-network-name     { font-size: 14.5px !important; }
+}

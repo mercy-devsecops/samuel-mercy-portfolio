@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Control Room — Samuel Mercy Oluwatobi Portfolio</title>
+  
+  <!-- Typography matching master brand -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="admin.css">
+
+  <!-- Firebase Web SDK (Compat mode for zero-build static hosting compatibility) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="admin-body">
+
+  <!-- ====================================================================== -->
+  <!-- 1. AUTHENTICATION GATE (Visible when unauthenticated)                  -->
+  <!-- ====================================================================== -->
+  <div class="auth-viewport" id="authViewport">
+    <div class="auth-card">
+      <div class="auth-brand-emblem">
+        <span class="auth-monogram">SMO</span>
+        <span class="auth-badge-dot"></span>
+      </div>
+      <h1 class="auth-title">CONTROL ROOM</h1>
+      <p class="auth-subtitle">Private Portfolio Content Management System</p>
+      
+      <div class="auth-alert error" id="authErrorAlert" style="display: none;"></div>
+
+      <form class="auth-form" id="adminLoginForm">
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Administrator Email</label>
+          <input type="email" id="loginEmail" class="form-control" placeholder="admin@samuelmercy.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Access Key / Password</label>
+          <input type="password" id="loginPassword" class="form-control" placeholder="••••••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-gold btn-block" id="loginSubmitBtn">
+          <span class="btn-text">Authenticate &amp; Enter</span>
+          <span class="btn-spinner" style="display: none;"></span>
+        </button>
+      </form>
+
+      <div class="auth-footer-notice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <span>Encrypted session • Firebase Auth &amp; Cloudinary integration</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- 2. ADMIN WORKSPACE (Protected — visible only when authenticated)       -->
+  <!-- ====================================================================== -->
+  <div class="admin-workspace" id="adminWorkspace" style="display: none;">
+
+    <!-- Top Universal Navigation Bar -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="mobile-toggle-btn" id="adminSidebarToggle" aria-label="Toggle navigation menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div class="brand-monogram-badge">
+          <span class="badge-core">SMO</span>
+        </div>
+        <div class="topbar-identity">
+          <span class="identity-name">SAMUEL MERCY OLUWATOBI</span>
+          <span class="identity-role">Portfolio Control Room</span>
+        </div>
+      </div>
+
+      <div class="topbar-center">
+        <!-- Live Global Save / Dirty Status Pill -->
+        <div class="save-status-pill saved" id="globalSaveStatus">
+          <span class="status-indicator-dot"></span>
+          <span class="status-text" id="globalSaveStatusText">All Changes Saved</span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <!-- Public Site Preview Button -->
+        <a href="index.html" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" id="btnPreviewPublicSite" title="Open public digital book in new tab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="btn-icon">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          <span class="btn-label">Preview Public Book</span>
+        </a>
+
+        <!-- Admin User Menu & Logout -->
+        <div class="admin-user-menu">
+          <span class="user-email-chip" id="currentUserEmail">admin@samuelmercy.com</span>
+          <button class="btn btn-outline-danger btn-sm" id="adminLogoutBtn" title="Sign out of Admin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="btn-icon">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span class="btn-label">Logout</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- App Stage: Sidebar + Dynamic Stage View -->
+    <div class="admin-stage-layout">
+
+      <!-- Focused Navigation Sidebar (Strictly Portfolio Sections + Settings) -->
+      <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-section-title">PORTFOLIO SECTIONS</div>
+        <nav class="sidebar-nav">
+          <button class="nav-tab active" data-section="home">
+            <span class="tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </span>
+            <span class="tab-name">HOME</span>
+            <span class="tab-badge">Cover</span>
+          </button>
+
+          <button class="nav-tab" data-section="about">
+            <span class="tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </span>
+            <span class="tab-name">ABOUT ME</span>
+            <span class="tab-count" id="badgeAboutPages">1 Page</span>
+          </button>
+
+          <button class="nav-tab" data-section="skills">
+            <span class="tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </span>
+            <span class="tab-name">SKILLS</span>
+            <span class="tab-count" id="badgeSkillsCount">0 Skills</span>
+          </button>
+
+          <button class="nav-tab" data-section="projects">
+            <span class="tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+            </span>
+            <span class="tab-name">PROJECTS</span>
+            <span class="tab-count" id="badgeProjectsCount">0 Projects</span>
+          </button>
+
+          <button class="nav-tab" data-section="certificates">
+            <span class="tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="8" r="7"></circle>
+                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+              </svg>
+            </span>
+            <span class="tab-name">CERTIFICATES</span>
+            <span class="tab-count" id="badgeCertsCount">0 Certs</span>
+          </button>
+
+          <button class="nav-tab" data-section="education">
+            <span class="tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+              </svg>
+            </span>
+            <span class="tab-name">EDUCATION</span>
+            <span class="tab-count" id="badgeEduCount">0 Records</span>
+          </button>
+
+          <button class="nav-tab" data-section="journey">
+            <span class="tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+              </svg>
+            </span>
+            <span class="tab-name">JOURNEY</span>
+            <span class="tab-count" id="badgeJourneyCount">0 Entries</span>
+          </button>
+
+          <button class="nav-tab" data-section="contact">
+            <span class="tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </span>
+            <span class="tab-name">CONTACT</span>
+            <span class="tab-badge">Channels</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section-title">SYSTEM</div>
+        <nav class="sidebar-nav">
+          <button class="nav-tab" data-section="cloud-config">
+            <span class="tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </span>
+            <span class="tab-name">Firebase &amp; Cloudinary</span>
+            <span class="tab-badge" id="cloudStatusBadge">Ready</span>
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Stage Container (Dynamic Section Content Loaded Here) -->
+      <main class="admin-main-stage" id="adminMainStage">
+        <!-- Rendered dynamically by admin.js -->
+      </main>
+
+    </div><!-- /.admin-stage-layout -->
+
+  </div><!-- /#adminWorkspace -->
+
+  <!-- Shared Toast Notifications Banner -->
+  <div class="toast-shelf" id="toastShelf"></div>
+
+  <!-- Reusable Modal Dialog Container -->
+  <div class="modal-backdrop" id="modalBackdrop" style="display: none;">
+    <div class="modal-dialog" id="modalDialog">
+      <!-- Injected dynamically -->
+    </div>
+  </div>
+
+  <script src="portfolio-config.js"></script>
+  <script src="portfolio-service.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

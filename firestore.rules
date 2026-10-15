@@ -1,0 +1,107 @@
+// ============================================================================
+// SAMUEL MERCY OLUWATOBI — PORTFOLIO FIRESTORE SECURITY RULES
+// Version: 1.0  |  Date: 2026-11-01
+//
+// SECURITY MODEL:
+//   - Public visitors can read ONLY published content (status == 'published').
+//   - Draft documents are invisible to unauthenticated users.
+//   - ONLY the verified Admin email can create, update, or delete any document.
+//   - The isAdmin() check uses request.auth.token.email — this is a server-side
+//     Firebase Auth claim embedded in the signed JWT token. It cannot be faked
+//     or bypassed from client-side JavaScript.
+//   - No other Firebase Auth user (if any were ever created) receives write access.
+//
+// DEPLOY THESE RULES:
+//   Firebase Console → Your Project → Firestore → Rules → Paste → Publish
+// ============================================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ADMIN IDENTITY CHECK
+    // Locked to the single verified Admin email address.
+    // Replace the email below ONLY if your Admin account email changes.
+    // ─────────────────────────────────────────────────────────────────────────
+    function isAdmin() {
+      return request.auth != null
+          && request.auth.token.email == "mywebsite220@gmail.com"
+          && request.auth.token.email_verified == true;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // HELPER: Published-only read guard
+    // Used for all content collections where drafts must be hidden from public.
+    // ─────────────────────────────────────────────────────────────────────────
+    function isPublished() {
+      return resource.data.status == 'published';
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // settings/home — Home cover data (no draft/publish cycle; always public)
+    // ─────────────────────────────────────────────────────────────────────────
+    match /settings/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // sections — Navigation structure (chapter list; always public)
+    // ─────────────────────────────────────────────────────────────────────────
+    match /sections/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // pages — About Me, Contact, and other dynamic section pages
+    // Public can only read published pages; drafts are fully hidden.
+    // ─────────────────────────────────────────────────────────────────────────
+    match /pages/{doc} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // skills — Skill category items
+    // ─────────────────────────────────────────────────────────────────────────
+    match /skills/{doc} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // projects — Portfolio project entries
+    // ─────────────────────────────────────────────────────────────────────────
+    match /projects/{doc} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // certificates — Professional certificates
+    // ─────────────────────────────────────────────────────────────────────────
+    match /certificates/{doc} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // education — Education records
+    // ─────────────────────────────────────────────────────────────────────────
+    match /education/{doc} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // journey — Career journey milestones
+    // ─────────────────────────────────────────────────────────────────────────
+    match /journey/{doc} {
+      allow read: if isPublished() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+  }
+}
