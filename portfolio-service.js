@@ -186,16 +186,51 @@
     // ========================================================================
 
     _initLocalData() {
+      const baseline = (window.PORTFOLIO_CONFIG && window.PORTFOLIO_CONFIG.baseline) ? 
+        JSON.parse(JSON.stringify(window.PORTFOLIO_CONFIG.baseline)) : {};
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          return JSON.parse(stored);
+          const parsed = JSON.parse(stored);
+          // Check if parsed has valid items; if not, or if baseline has richer data, upgrade/merge
+          const hasParsedItems = parsed && parsed.items && (
+            (parsed.items.projects && parsed.items.projects.length > 0) ||
+            (parsed.items.skills && parsed.items.skills.length > 0)
+          );
+          const hasBaselineItems = baseline && baseline.items && (
+            (baseline.items.projects && baseline.items.projects.length > 0) ||
+            (baseline.items.skills && baseline.items.skills.length > 0)
+          );
+
+          if (!hasParsedItems && hasBaselineItems) {
+            const merged = Object.assign({}, baseline, parsed, {
+              home: Object.assign({}, baseline.home || {}, parsed.home || {}),
+              sections: (parsed.sections && parsed.sections.length > 0) ? parsed.sections : (baseline.sections || []),
+              pages: (parsed.pages && Object.keys(parsed.pages).length > 0) ? parsed.pages : (baseline.pages || {}),
+              items: Object.assign({}, baseline.items || {}, parsed.items || {})
+            });
+            if (baseline.items) {
+              for (const [key, arr] of Object.entries(baseline.items)) {
+                if ((!merged.items[key] || merged.items[key].length === 0) && arr && arr.length > 0) {
+                  merged.items[key] = arr;
+                }
+              }
+            }
+            if (baseline.pages) {
+              for (const [secId, pList] of Object.entries(baseline.pages)) {
+                if ((!merged.pages[secId] || merged.pages[secId].length === 0) && pList && pList.length > 0) {
+                  merged.pages[secId] = pList;
+                }
+              }
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+            return merged;
+          }
+          return parsed;
         } catch (e) {
           console.warn('Corrupted local storage data. Resetting to baseline.', e);
         }
       }
-      const baseline = (window.PORTFOLIO_CONFIG && window.PORTFOLIO_CONFIG.baseline) ? 
-        JSON.parse(JSON.stringify(window.PORTFOLIO_CONFIG.baseline)) : {};
       localStorage.setItem(STORAGE_KEY, JSON.stringify(baseline));
       return baseline;
     }
@@ -216,6 +251,124 @@
       this.localData = baseline;
       this._persistLocalData();
       return this.localData;
+    }
+
+    // Import full backup JSON
+    importBackupData(backupJson) {
+      let rawData = null;
+      if (typeof backupJson === 'string') {
+        try {
+          rawData = JSON.parse(backupJson);
+        } catch (e) {
+          throw new Error('Invalid JSON format.');
+        }
+      } else {
+        rawData = backupJson;
+      }
+
+      let target = null;
+      if (rawData && rawData.data && rawData.data.portfolioData) {
+        target = rawData.data.portfolioData;
+      } else if (rawData && rawData.portfolioData) {
+        target = rawData.portfolioData;
+      } else if (rawData && rawData.sections && rawData.items) {
+        target = rawData;
+      }
+
+      if (!target || typeof target !== 'object') {
+        throw new Error('Unrecognized portfolio backup format. Could not locate portfolio data.');
+      }
+
+      this.localData = JSON.parse(JSON.stringify(target));
+      this._persistLocalData();
+      return this.localData;
+    }
+
+    // Export current portfolio data
+    exportBackupData() {
+      return {
+        exportedAt: new Date().toISOString(),
+        version: '1.0',
+        author: 'Samuel Mercy Oluwatobi',
+        data: {
+          portfolioData: JSON.parse(JSON.stringify(this.localData)),
+          configOverride: localStorage.getItem(CONFIG_OVERRIDE_KEY) ? JSON.parse(localStorage.getItem(CONFIG_OVERRIDE_KEY)) : null
+        }
+      };
+    }
+
+    // Synchronize all local portfolio content into Cloud Firestore (Merge mode)
+    async syncLocalToFirestore() {
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Firebase Firestore is not initialized or connected.');
+      }
+      if (!this.isAuthenticated()) {
+        throw new Error('Admin authentication required. Please sign in to sync with Firestore.');
+      }
+
+      const results = {
+        home: false,
+        sections: 0,
+        pages: 0,
+        items: 0,
+        errors: []
+      };
+
+      // 1. Settings / Home
+      if (this.localData.home) {
+        try {
+          await this.db.collection('settings').doc('home').set(this.localData.home, { merge: true });
+          results.home = true;
+        } catch (err) {
+          results.errors.push(`Settings/Home sync error: ${err.message}`);
+        }
+      }
+
+      // 2. Sections
+      if (Array.isArray(this.localData.sections)) {
+        for (const sec of this.localData.sections) {
+          try {
+            await this.db.collection('sections').doc(sec.id).set(sec, { merge: true });
+            results.sections++;
+          } catch (err) {
+            results.errors.push(`Section ${sec.id} sync error: ${err.message}`);
+          }
+        }
+      }
+
+      // 3. Pages
+      if (this.localData.pages && typeof this.localData.pages === 'object') {
+        for (const [secId, pageList] of Object.entries(this.localData.pages)) {
+          if (Array.isArray(pageList)) {
+            for (const page of pageList) {
+              try {
+                await this.db.collection('pages').doc(page.id).set(page, { merge: true });
+                results.pages++;
+              } catch (err) {
+                results.errors.push(`Page ${page.id} sync error: ${err.message}`);
+              }
+            }
+          }
+        }
+      }
+
+      // 4. Structured Items (skills, projects, certificates, education, journey)
+      if (this.localData.items && typeof this.localData.items === 'object') {
+        for (const [colName, itemList] of Object.entries(this.localData.items)) {
+          if (Array.isArray(itemList)) {
+            for (const item of itemList) {
+              try {
+                await this.db.collection(colName).doc(item.id).set(item, { merge: true });
+                results.items++;
+              } catch (err) {
+                results.errors.push(`Item ${colName}/${item.id} sync error: ${err.message}`);
+              }
+            }
+          }
+        }
+      }
+
+      return results;
     }
 
     // ========================================================================

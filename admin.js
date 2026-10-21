@@ -2141,6 +2141,40 @@
           </div>
         </div>
       </div>
+
+      <!-- Cloud Synchronization & Disaster Recovery -->
+      <div class="admin-card" style="margin-top:24px;">
+        <div class="card-header">
+          <div class="card-title">Cloud Database Synchronization &amp; Backup Tools</div>
+        </div>
+        <p style="color:var(--text-muted); font-size:13px; line-height:1.6; margin-bottom:16px;">
+          Synchronize your local portfolio content into Google Cloud Firestore so that public visitors can immediately view all published projects, skills, certificates, education, and career milestones.
+        </p>
+
+        <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+          <button class="btn btn-gold btn-sm" id="btnSyncFirestore">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;display:inline-block;vertical-align:middle;">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            Sync Local Data to Cloud Database (Firestore)
+          </button>
+
+          <label class="btn btn-secondary btn-sm" style="margin:0; cursor:pointer;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;display:inline-block;vertical-align:middle;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Restore from Backup JSON
+            <input type="file" id="backupFileInput" accept=".json" style="display:none;">
+          </label>
+
+          <button class="btn btn-secondary btn-sm" id="btnExportBackup">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;display:inline-block;vertical-align:middle;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+            Export Backup JSON
+          </button>
+        </div>
+      </div>
     `;
 
     document.getElementById('btnSaveConfig').addEventListener('click', () => {
@@ -2169,6 +2203,79 @@
         renderSection(activeSection);
       }
     });
+
+    const btnSyncFirestore = document.getElementById('btnSyncFirestore');
+    if (btnSyncFirestore) {
+      btnSyncFirestore.addEventListener('click', async () => {
+        if (!window.portfolioService.isAuthenticated()) {
+          showToast('Please authenticate with Firebase first.', 'error');
+          return;
+        }
+        btnSyncFirestore.disabled = true;
+        btnSyncFirestore.textContent = 'Syncing to Firestore...';
+        try {
+          const res = await window.portfolioService.syncLocalToFirestore();
+          if (res.errors && res.errors.length > 0) {
+            console.warn('Firestore sync warnings:', res.errors);
+            showToast(`Synced with warnings: ${res.sections} sections, ${res.pages} pages, ${res.items} items. Check console.`, 'info');
+          } else {
+            showToast(`Successfully synced to Firestore! (${res.sections} sections, ${res.pages} pages, ${res.items} items)`, 'success');
+          }
+        } catch (err) {
+          console.error('Sync failed:', err);
+          showToast(`Sync failed: ${err.message}`, 'error');
+        } finally {
+          btnSyncFirestore.disabled = false;
+          btnSyncFirestore.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;display:inline-block;vertical-align:middle;">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            Sync Local Data to Cloud Database (Firestore)
+          `;
+        }
+      });
+    }
+
+    const backupFileInput = document.getElementById('backupFileInput');
+    if (backupFileInput) {
+      backupFileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            window.portfolioService.importBackupData(event.target.result);
+            showToast('Backup restored successfully!', 'success');
+            refreshBadges();
+            renderSection(activeSection);
+          } catch (err) {
+            showToast(`Restore failed: ${err.message}`, 'error');
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    const btnExportBackup = document.getElementById('btnExportBackup');
+    if (btnExportBackup) {
+      btnExportBackup.addEventListener('click', () => {
+        try {
+          const backup = window.portfolioService.exportBackupData();
+          const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `SMO-portfolio-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('Backup exported.', 'success');
+        } catch (err) {
+          showToast(`Export failed: ${err.message}`, 'error');
+        }
+      });
+    }
   }
 
   // ==========================================================================
