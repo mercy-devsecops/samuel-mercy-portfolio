@@ -2144,6 +2144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           mobileContentCanvas.classList.remove('has-editorial-flow');
         }
         mobileContentCanvas.innerHTML = renderPageBodyHTML(pageItem.pageData, true);
+        mobileContentCanvas.scrollTop = 0;
       }
 
       // Footer

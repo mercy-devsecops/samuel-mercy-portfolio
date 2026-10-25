@@ -3064,13 +3064,15 @@ a {
     overflow: visible;
   }
 
-  /* OPEN STATE DIMENSIONS ON MOBILE: Extended downward to fill vertical viewport, keeping top exact */
+  /* OPEN STATE DIMENSIONS ON MOBILE: Sized responsively to viewport with safe margins */
   .book-volume-assembly.state-open {
-    width: clamp(310px, 88vw, 356px);
-    height: calc(100vh - 124px);
-    height: calc(100dvh - 124px);
+    width: min(calc(100vw - 24px), 360px);
+    height: calc(100vh - 120px);
+    height: calc(100dvh - 120px);
     max-height: 740px;
+    min-height: 460px;
     margin: 0 auto;
+    box-sizing: border-box;
   }
 
   .open-book-spread {
@@ -3083,7 +3085,7 @@ a {
   /* Deep Burgundy Leather Casing Backing */
   .jotter-casing-backing {
     position: absolute;
-    inset: -6px -8px -6px -8px;
+    inset: -5px -6px -5px -6px;
     background: radial-gradient(circle at 60% 40%, #3a0e16 0%, #200408 60%, #120104 100%);
     border-radius: 12px;
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.95), inset 0 0 18px rgba(0, 0, 0, 0.85);
@@ -3178,20 +3180,29 @@ a {
     position: relative;
     flex: 1;
     height: 100%;
+    min-height: 0;
+    min-width: 0;
     background: radial-gradient(ellipse at 50% 50%, #f7eedb 0%, #ede1c8 65%, #ddceb3 100%);
     border-radius: 2px 6px 6px 2px;
     box-shadow: 4px 6px 18px rgba(0, 0, 0, 0.65), inset 0 0 30px rgba(120, 85, 35, 0.22);
-    overflow: visible;
+    overflow: hidden;
     z-index: 6;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
   }
 
   .jotter-parchment-sheet {
     position: relative;
     width: 100%;
     height: 100%;
-    padding: 10px 10px 10px 14px;
+    min-height: 0;
+    min-width: 0;
+    padding: 8px 8px 8px 12px;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .jotter-spine-shadow {
@@ -3209,26 +3220,38 @@ a {
   .jotter-gold-border-outer {
     position: relative;
     flex: 1;
+    min-height: 0;
+    min-width: 0;
+    height: 100%;
     border: 1.2px solid rgba(160, 115, 45, 0.65);
-    padding: 4px;
+    padding: 3px;
     box-shadow: inset 0 0 6px rgba(120, 80, 30, 0.15);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .jotter-gold-border-inner {
     position: relative;
     width: 100%;
     height: 100%;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
     border: 0.8px solid rgba(160, 115, 45, 0.45);
-    padding: 10px 8px 8px;
+    padding: 7px 6px 6px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 
   .jotter-corner-accent {
     position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     pointer-events: none;
     filter: drop-shadow(0 0 2px rgba(180, 130, 45, 0.4));
   }
@@ -3243,9 +3266,15 @@ a {
     display: flex;
     flex-direction: column;
     height: 100%;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch;
     text-align: center;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   /* Top Header: CHAPTER I with Horizontal Flourish and Diamond Gem */
@@ -3253,15 +3282,19 @@ a {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
     width: 100%;
+    flex-shrink: 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(140, 95, 35, 0.18);
+    margin-bottom: 3px;
   }
 
   .jotter-chapter-numeral {
     font-family: var(--font-serif-master);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.26em;
     color: #845417;
   }
 
@@ -3270,8 +3303,8 @@ a {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    width: 75%;
-    max-width: 180px;
+    width: 70%;
+    max-width: 160px;
     margin: 1px 0;
   }
 
@@ -3289,22 +3322,44 @@ a {
 
   .jotter-section-title {
     font-family: var(--font-serif-master);
-    font-size: 13.5px;
+    font-size: 13px;
     letter-spacing: 0.16em;
     color: #350d14;
     font-weight: 700;
-    margin-top: 2px;
+    margin-top: 1px;
   }
 
-  /* Content Canvas (Generous uncrowded space) */
+  /* Content Canvas: Fully contained, independent scroll area with luxury gold scrollbar */
   .jotter-content-canvas {
     flex: 1;
+    min-height: 0;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
     width: 100%;
-    padding: 12px 6px;
+    padding: 4px 2px;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(180, 130, 45, 0.45) rgba(140, 95, 35, 0.05);
+    box-sizing: border-box;
+  }
+
+  .jotter-content-canvas::-webkit-scrollbar {
+    width: 4px;
+    display: block;
+  }
+
+  .jotter-content-canvas::-webkit-scrollbar-track {
+    background: rgba(140, 95, 35, 0.05);
+    border-radius: 2px;
+  }
+
+  .jotter-content-canvas::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #d4af37 0%, #845417 100%);
+    border-radius: 2px;
+    border: 1px solid rgba(255, 235, 175, 0.35);
   }
 
   .jotter-arch-card {
@@ -3371,6 +3426,9 @@ a {
   .jotter-footer-block {
     width: 100%;
     padding-top: 4px;
+    flex-shrink: 0;
+    border-top: 1px solid rgba(140, 95, 35, 0.18);
+    margin-top: 3px;
   }
 
   .jotter-footer-flourish {
@@ -3494,14 +3552,17 @@ a {
     transform: rotateY(180deg);
   }
 
-  /* Mobile Navigation Arrows (Comfortably positioned on sides and vertically centered with book) */
+  /* Mobile Navigation Arrows: Safely positioned at bottom flanking the indicator pill */
   .nav-flipper-arrow {
     position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 34px;
-    height: 34px;
-    z-index: 60;
+    bottom: 12px;
+    top: auto;
+    transform: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    z-index: 70;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.8), 0 0 10px rgba(212, 175, 55, 0.3);
   }
 
   .nav-flipper-arrow svg {
@@ -3510,42 +3571,62 @@ a {
   }
 
   .arrow-left {
-    left: 6px;
+    left: 12px;
   }
 
   .arrow-right {
-    right: 6px;
+    right: 12px;
   }
 
-  /* Page/Chapter Indicator: Sits with small, intentional spacing right below the book */
+  /* Page/Chapter Indicator: Positioned cleanly between navigation arrows at bottom */
   .book-page-flipper-pill {
-    position: relative;
-    bottom: auto;
-    left: auto;
-    transform: none;
-    margin: 8px auto 12px auto;
-    font-size: 9px;
-    padding: 5px 14px;
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    z-index: 65;
+    font-size: 8.5px;
+    padding: 6px 12px;
+    max-width: calc(100vw - 116px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.85), inset 0 0 10px rgba(212, 175, 55, 0.2);
   }
 
-  /* Mobile Editorial Flow for Chapters */
+  /* Mobile Editorial Flow for Chapters: Single smooth scrolling container */
   .jotter-content-canvas.has-editorial-flow,
   .jotter-content-canvas:has(.about-editorial-story),
   .jotter-content-canvas:has(.skills-editorial-flow),
   .jotter-content-canvas:has(.project-case-study),
   .jotter-content-canvas:has(.certificate-showcase),
-  .jotter-content-canvas:has(.education-showcase) {
+  .jotter-content-canvas:has(.education-showcase),
+  .jotter-content-canvas:has(.journey-timeline-flow),
+  .jotter-content-canvas:has(.journey-detail-flow),
+  .jotter-content-canvas:has(.contact-page-flow) {
     justify-content: flex-start;
     align-items: stretch;
     text-align: left;
-    padding: 6px 4px 4px 4px;
-    overflow-y: auto;
-    scrollbar-width: none;
+    padding: 4px 2px;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
 
-  .jotter-content-canvas.has-editorial-flow::-webkit-scrollbar,
-  .jotter-content-canvas:has(.about-editorial-story)::-webkit-scrollbar {
-    display: none;
+  .jotter-content-canvas .project-case-study,
+  .jotter-content-canvas .about-editorial-story,
+  .jotter-content-canvas .skills-editorial-flow,
+  .jotter-content-canvas .certificate-showcase,
+  .jotter-content-canvas .education-showcase,
+  .jotter-content-canvas .journey-timeline-flow,
+  .jotter-content-canvas .journey-detail-flow,
+  .jotter-content-canvas .contact-page-flow {
+    height: auto !important;
+    min-height: min-content !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .jotter-content-canvas .about-editorial-story {
@@ -3771,14 +3852,36 @@ a {
     line-height: 1.5;
   }
 
+  .jotter-content-canvas .project-actions-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 7px !important;
+    margin-top: 8px !important;
+    margin-bottom: 12px !important;
+    width: 100% !important;
+    clear: both !important;
+  }
+
   .jotter-content-canvas .btn-book-action {
-    font-size: 9.5px;
-    padding: 5px 10px;
-    letter-spacing: 0.1em;
+    font-size: 9.5px !important;
+    padding: 6px 10px !important;
+    letter-spacing: 0.08em !important;
+    flex: 1 1 calc(50% - 6px) !important;
+    min-width: 110px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
   }
 
   .jotter-content-canvas .project-section-block {
-    margin-bottom: 20px;
+    margin-bottom: 14px !important;
+  }
+
+  .jotter-content-canvas .project-img-wide {
+    max-height: 125px !important;
+    width: 100% !important;
+    object-fit: cover !important;
   }
 
   .jotter-content-canvas .editorial-section-rule {
@@ -3853,14 +3956,40 @@ a {
 }
 
 /* Very Small Mobile (< 320px fallback only) */
-@media (max-width: 320px) {
+@media (max-width: 340px) {
   .book-volume-assembly.state-closed {
-    width: 72vw;
-    height: 104vw;
+    width: clamp(240px, 82vw, 290px);
+    height: clamp(380px, 126vw, 440px);
   }
   .book-volume-assembly.state-open {
-    width: 86vw;
-    height: 130vw;
+    width: calc(100vw - 16px);
+    min-width: 280px;
+  }
+  .jotter-ring-spine {
+    width: 30px;
+  }
+  .jotter-parchment-sheet {
+    padding: 6px 4px 6px 8px;
+  }
+  .jotter-gold-border-inner {
+    padding: 6px 4px 4px;
+  }
+  .jotter-turn-tab {
+    display: none;
+  }
+  .jotter-paper-stack {
+    display: none;
+  }
+  .arrow-left {
+    left: 6px;
+  }
+  .arrow-right {
+    right: 6px;
+  }
+  .book-page-flipper-pill {
+    max-width: calc(100vw - 96px);
+    font-size: 8px;
+    padding: 4px 8px;
   }
 }
 
