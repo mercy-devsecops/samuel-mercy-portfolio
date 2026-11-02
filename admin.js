@@ -2215,16 +2215,76 @@
         btnSyncFirestore.textContent = 'Syncing to Firestore...';
         try {
           const res = await window.portfolioService.syncLocalToFirestore();
-          if (res.errors && res.errors.length > 0) {
+          console.log('[SyncReport]', res);
+
+          const totalUploaded = (res.home ? 1 : 0) +
+            (res.sections.count || 0) +
+            (res.pages.count || 0) +
+            (res.projects.count || 0) +
+            (res.skills.count || 0) +
+            (res.certificates.count || 0) +
+            (res.education.count || 0) +
+            (res.journey.count || 0);
+
+          if (res.errors && res.errors.length > 0 && totalUploaded === 0) {
             console.error('Firestore sync errors:', res.errors);
-            if (res.sections === 0 && res.pages === 0 && res.items === 0 && !res.home) {
-              showToast(`Cloud Sync FAILED: 0 items written. ${res.errors[0]}`, 'error');
-            } else {
-              showToast(`Synced with warnings: ${res.sections} sections, ${res.pages} pages, ${res.items} items. Some failed: ${res.errors[0]}`, 'info');
-            }
+            showToast(`Cloud Sync FAILED: 0 items written. ${res.errors[0]}`, 'error');
           } else {
-            showToast(`Successfully synced to Cloud Firestore! (${res.sections} sections, ${res.pages} pages, ${res.items} items)`, 'success');
+            showToast(`Sync complete! ${totalUploaded} records processed. Check report modal.`, res.errors.length > 0 ? 'info' : 'success');
           }
+
+          // Build Detailed Verification Report Modal
+          const reportHtml = `
+            <div class="modal-header">
+              <h3>Cloud Database Synchronization Report</h3>
+              <button class="modal-close" id="btnModalCloseReport">&times;</button>
+            </div>
+            <div class="modal-body" style="font-size:13px; line-height:1.6; max-height:65vh; overflow-y:auto;">
+              <div style="background:rgba(212,175,55,0.08); border:1px solid rgba(212,175,55,0.25); border-radius:6px; padding:12px; margin-bottom:16px;">
+                <strong>Sync Summary:</strong>
+                <ul style="margin:8px 0 0 18px; padding:0;">
+                  <li><strong>Cover Settings (HOME):</strong> ${res.home ? 'Uploaded' : 'Failed / Skipped'}</li>
+                  <li><strong>Sections (Chapters):</strong> ${res.sections.count} uploaded (${res.sections.ids.join(', ')})</li>
+                  <li><strong>Pages (Dynamic Spread Pages):</strong> ${res.pages.count} uploaded</li>
+                  <li><strong>Projects:</strong> ${res.projects.count} uploaded</li>
+                  <li><strong>Skills:</strong> ${res.skills.count} uploaded</li>
+                  <li><strong>Certificates:</strong> ${res.certificates.count} uploaded</li>
+                  <li><strong>Education:</strong> ${res.education.count} uploaded</li>
+                  <li><strong>Journey Milestones:</strong> ${res.journey.count} uploaded</li>
+                  <li><strong>Large Images Migrated to Cloudinary:</strong> ${res.migratedImages.length > 0 ? res.migratedImages.join(', ') : 'None needed (all under limit)'}</li>
+                </ul>
+              </div>
+
+              <div style="margin-bottom:16px;">
+                <strong>Document ID Discrepancy &amp; Orphan Check:</strong>
+                <p style="color:var(--text-muted); font-size:12px; margin:4px 0 8px 0;">
+                  Cloud documents without local matches are preserved untouched (automatic deletion disabled per policy):
+                </p>
+                <pre style="background:rgba(0,0,0,0.4); padding:10px; border-radius:4px; font-size:11px; max-height:140px; overflow:auto;">${escapeHTML(JSON.stringify(res.comparison, null, 2))}</pre>
+              </div>
+
+              ${res.errors.length > 0 ? `
+                <div style="background:rgba(220,53,69,0.1); border:1px solid rgba(220,53,69,0.3); border-radius:6px; padding:12px; color:#ff8080;">
+                  <strong>Errors Encountered (${res.errors.length}):</strong>
+                  <ul style="margin:6px 0 0 18px; padding:0;">
+                    ${res.errors.map(e => `<li>${escapeHTML(e)}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : `
+                <div style="color:#70e090; font-size:12px;">All writes succeeded with 0 errors.</div>
+              `}
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-gold btn-sm" id="btnModalDismissReport">Close Report</button>
+            </div>
+          `;
+
+          openModal(reportHtml);
+          const closeBtn = document.getElementById('btnModalCloseReport');
+          const dismissBtn = document.getElementById('btnModalDismissReport');
+          if (closeBtn) closeBtn.addEventListener('click', closeModal);
+          if (dismissBtn) dismissBtn.addEventListener('click', closeModal);
+
         } catch (err) {
           console.error('Sync failed:', err);
           showToast(`Sync failed: ${err.message}`, 'error');

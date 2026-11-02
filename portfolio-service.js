@@ -297,6 +297,60 @@
       };
     }
 
+    // Helper to migrate large base64 data to Cloudinary via unsigned upload with verification
+    async ensureCloudinaryImage(urlOrBase64, folder = 'portfolio') {
+      if (!urlOrBase64 || typeof urlOrBase64 !== 'string') return urlOrBase64;
+      if (urlOrBase64.startsWith('http://') || urlOrBase64.startsWith('https://')) {
+        return urlOrBase64;
+      }
+      if (!urlOrBase64.startsWith('data:image/')) {
+        return urlOrBase64;
+      }
+
+      const cloudName = this.config.cloudinary && this.config.cloudinary.cloudName;
+      const uploadPreset = this.config.cloudinary && this.config.cloudinary.uploadPreset;
+      if (!cloudName || !uploadPreset || cloudName === 'demo') {
+        return urlOrBase64;
+      }
+
+      try {
+        const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+        const formData = new FormData();
+        formData.append('file', urlOrBase64);
+        formData.append('upload_preset', uploadPreset);
+        formData.append('folder', folder);
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          console.warn('[Cloudinary] Upload failed with status:', response.status);
+          return urlOrBase64;
+        }
+
+        const data = await response.json();
+        const secureUrl = data.secure_url || data.url;
+        if (!secureUrl) return urlOrBase64;
+
+        try {
+          const verifyRes = await fetch(secureUrl, { method: 'HEAD' });
+          if (verifyRes.ok) {
+            console.log('[Cloudinary] Successfully migrated base64 to:', secureUrl);
+            return secureUrl;
+          }
+        } catch (vErr) {
+          console.warn('[Cloudinary] Verification HEAD check warning:', vErr);
+        }
+
+        return secureUrl;
+      } catch (err) {
+        console.warn('[Cloudinary] Auto-migration error, retaining original:', err);
+        return urlOrBase64;
+      }
+    }
+
     // Synchronize all local portfolio content into Cloud Firestore (Merge mode)
     async syncLocalToFirestore() {
       if (!this.isFirebaseReady || !this.db) {
@@ -308,15 +362,50 @@
 
       const results = {
         home: false,
-        sections: 0,
-        pages: 0,
-        items: 0,
+        sections: { count: 0, ids: [] },
+        pages: { count: 0, ids: [] },
+        projects: { count: 0, ids: [] },
+        skills: { count: 0, ids: [] },
+        certificates: { count: 0, ids: [] },
+        education: { count: 0, ids: [] },
+        journey: { count: 0, ids: [] },
+        comparison: {
+          cloudIds: {},
+          localIds: {},
+          inLocalOnly: {},
+          inCloudOnly: {}
+        },
+        migratedImages: [],
         errors: []
+      };
+
+      // Helper to fetch cloud IDs for comparison without deleting
+      const checkCollectionDiff = async (colName, localList) => {
+        try {
+          const snap = await this.db.collection(colName).get();
+          const cloudList = snap.docs.map(d => d.id);
+          const localIdSet = new Set((localList || []).map(item => item.id));
+          const cloudIdSet = new Set(cloudList);
+
+          results.comparison.cloudIds[colName] = cloudList;
+          results.comparison.localIds[colName] = Array.from(localIdSet);
+          results.comparison.inLocalOnly[colName] = Array.from(localIdSet).filter(id => !cloudIdSet.has(id));
+          results.comparison.inCloudOnly[colName] = cloudList.filter(id => !localIdSet.has(id));
+        } catch (e) {
+          results.comparison.cloudIds[colName] = `Notice: ${e.message}`;
+        }
       };
 
       // 1. Settings / Home
       if (this.localData.home) {
         try {
+          if (this.localData.home.heroImage && this.localData.home.heroImage.startsWith('data:image/')) {
+            const uploaded = await this.ensureCloudinaryImage(this.localData.home.heroImage, 'portfolio/home');
+            if (uploaded !== this.localData.home.heroImage) {
+              this.localData.home.heroImage = uploaded;
+              results.migratedImages.push('home.heroImage');
+            }
+          }
           await this.db.collection('settings').doc('home').set(this.localData.home, { merge: true });
           results.home = true;
         } catch (err) {
@@ -326,10 +415,12 @@
 
       // 2. Sections
       if (Array.isArray(this.localData.sections)) {
+        await checkCollectionDiff('sections', this.localData.sections);
         for (const sec of this.localData.sections) {
           try {
             await this.db.collection('sections').doc(sec.id).set(sec, { merge: true });
-            results.sections++;
+            results.sections.count++;
+            results.sections.ids.push(sec.id);
           } catch (err) {
             results.errors.push(`Section ${sec.id} sync error: ${err.message}`);
           }
@@ -338,16 +429,26 @@
 
       // 3. Pages
       if (this.localData.pages && typeof this.localData.pages === 'object') {
+        const flatPages = [];
         for (const [secId, pageList] of Object.entries(this.localData.pages)) {
-          if (Array.isArray(pageList)) {
-            for (const page of pageList) {
-              try {
-                await this.db.collection('pages').doc(page.id).set(page, { merge: true });
-                results.pages++;
-              } catch (err) {
-                results.errors.push(`Page ${page.id} sync error: ${err.message}`);
+          if (Array.isArray(pageList)) flatPages.push(...pageList);
+        }
+        await checkCollectionDiff('pages', flatPages);
+
+        for (const page of flatPages) {
+          try {
+            if (page.mediaUrl && page.mediaUrl.startsWith('data:image/')) {
+              const uploaded = await this.ensureCloudinaryImage(page.mediaUrl, 'portfolio/pages');
+              if (uploaded !== page.mediaUrl) {
+                page.mediaUrl = uploaded;
+                results.migratedImages.push(`page ${page.id} mediaUrl`);
               }
             }
+            await this.db.collection('pages').doc(page.id).set(page, { merge: true });
+            results.pages.count++;
+            results.pages.ids.push(page.id);
+          } catch (err) {
+            results.errors.push(`Page ${page.id} sync error: ${err.message}`);
           }
         }
       }
@@ -356,16 +457,33 @@
       if (this.localData.items && typeof this.localData.items === 'object') {
         for (const [colName, itemList] of Object.entries(this.localData.items)) {
           if (Array.isArray(itemList)) {
+            await checkCollectionDiff(colName, itemList);
             for (const item of itemList) {
               try {
+                for (const imgField of ['imageUrl', 'coverImage']) {
+                  if (item[imgField] && item[imgField].startsWith('data:image/')) {
+                    const uploaded = await this.ensureCloudinaryImage(item[imgField], `portfolio/${colName}`);
+                    if (uploaded !== item[imgField]) {
+                      item[imgField] = uploaded;
+                      results.migratedImages.push(`${colName}/${item.id} ${imgField}`);
+                    }
+                  }
+                }
                 await this.db.collection(colName).doc(item.id).set(item, { merge: true });
-                results.items++;
+                if (results[colName]) {
+                  results[colName].count++;
+                  results[colName].ids.push(item.id);
+                }
               } catch (err) {
                 results.errors.push(`Item ${colName}/${item.id} sync error: ${err.message}`);
               }
             }
           }
         }
+      }
+
+      if (results.migratedImages.length > 0) {
+        this._persistLocalData();
       }
 
       return results;

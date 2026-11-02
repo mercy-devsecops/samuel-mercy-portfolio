@@ -26,6 +26,7 @@ service cloud.firestore {
     // ─────────────────────────────────────────────────────────────────────────
     function isAdmin() {
       return request.auth != null
+          && request.auth.uid == "bZ7wDNDh54ZalBubIkGoXziZWf83"
           && request.auth.token.email == "mywebsite220@gmail.com";
     }
 
