@@ -3832,7 +3832,10 @@ a {
   }
 
   .jotter-content-canvas .project-img-wide {
-    max-height: 140px;
+    max-height: 220px;
+    width: 100%;
+    object-fit: contain;
+    background: #0e0306;
   }
 
   .jotter-content-canvas .project-overview-content,
@@ -3879,9 +3882,10 @@ a {
   }
 
   .jotter-content-canvas .project-img-wide {
-    max-height: 125px !important;
+    max-height: 220px !important;
     width: 100% !important;
-    object-fit: cover !important;
+    object-fit: contain !important;
+    background: #0e0306 !important;
   }
 
   .jotter-content-canvas .editorial-section-rule {

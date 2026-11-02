@@ -614,16 +614,33 @@ document.addEventListener('DOMContentLoaded', async () => {
   const _isAdmin = window.portfolioService && window.portfolioService.isAuthenticated();
   const isPreviewMode = _previewRequested && _isAdmin;
 
+  // Cloudinary Dynamic Delivery Optimization (WebP/AVIF auto-format, adaptive quality & sizing)
+  function getOptimizedImageUrl(url, options = {}) {
+    if (!url || typeof url !== 'string') return '';
+    if (url.startsWith('data:image')) return url;
+    if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
+      if (url.includes('/image/upload/f_auto') || url.includes('/image/upload/q_auto')) {
+        return url;
+      }
+      const width = options.width ? `,w_${options.width}` : '';
+      const crop = options.crop ? `,c_${options.crop}` : ',c_limit';
+      return url.replace('/image/upload/', `/image/upload/f_auto,q_auto${width}${crop}/`);
+    }
+    return url;
+  }
+
   // Helper to compile synchronous local snapshot for instant zero-latency book setup
   function getSynchronousPortfolioData(includeDrafts) {
-    // 1. If we have a verified fresh public cache from a previous session, validate and use it for zero-flicker load
+    // 1. If we have a verified fresh public cache from a recent session (< 15 mins), validate and use it
+    const MAX_CACHE_AGE_MS = 15 * 60 * 1000;
     if (!includeDrafts && typeof localStorage !== 'undefined') {
       try {
         const cached = localStorage.getItem('portfolio_public_cache_v2');
         if (cached) {
           const parsed = JSON.parse(cached);
+          const isFresh = parsed && parsed.timestamp && (Date.now() - parsed.timestamp < MAX_CACHE_AGE_MS);
           const payload = (parsed && parsed.data) ? parsed.data : parsed;
-          if (payload && payload.home && Array.isArray(payload.sections) && payload.items) {
+          if (isFresh && payload && payload.home && Array.isArray(payload.sections) && payload.items) {
             const hasCollections = ['skills', 'projects', 'certificates', 'education', 'journey'].every(
               k => Array.isArray(payload.items[k])
             );
@@ -678,6 +695,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     MOBILE_SECTION_MAP = mRes.mobileSectionMap;
     if (data.home) updateCoverElements(data.home);
 
+    // High-priority preload for About page portrait (ensures zero load delay when book opens)
+    if (data.pages && data.pages.about && data.pages.about[0] && data.pages.about[0].mediaUrl) {
+      const portraitUrl = getOptimizedImageUrl(data.pages.about[0].mediaUrl, { width: 700 });
+      if (portraitUrl && !portraitUrl.startsWith('data:')) {
+        const pre = new Image();
+        pre.src = portraitUrl;
+      }
+    }
+
     // Sync navigation sidebar buttons with available sections (hides empty/deleted sections like journey)
     const activeSectionIds = new Set(SECTIONS.map(s => s.id));
     activeSectionIds.add('home');
@@ -711,6 +737,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 1. Immediately initialize with synchronous local data (0ms delay)
   // This allows the DOM structure, state model, and all click/arrow handlers to attach instantly.
+  let isCloudSyncPending = true;
   let currentPortfolioData = getSynchronousPortfolioData(isPreviewMode);
   let SECTIONS = [];
   let BOOK_SPREADS = [];
@@ -732,6 +759,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.portfolioService.getPublicPortfolioData(isPreviewMode).then(data => {
+      isCloudSyncPending = false;
       if (!data) return;
       applyPortfolioData(data);
       safeRenderAfterUpdate();
@@ -741,6 +769,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (pill) pill.style.display = 'none';
       }
     }).catch(err => {
+      isCloudSyncPending = false;
       console.warn('Portfolio sync warning:', err);
       const pill = document.getElementById('pageFlipperPill');
       const msg = document.getElementById('flipperStatusMsg');
@@ -893,11 +922,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Gilded tipped-in portrait casing
     let portraitHTML = '';
     if (mediaUrl) {
+      const optPortrait = getOptimizedImageUrl(mediaUrl, { width: 700 });
       const noBodyClass = !bodyText ? ' no-body-portrait' : '';
       portraitHTML = `
         <figure class="about-portrait-vignette${noBodyClass}">
           <div class="portrait-gilded-casing">
-            <img src="${mediaUrl}" alt="Samuel Mercy Oluwatobi Portrait" class="about-portrait-img" loading="lazy" />
+            <img src="${optPortrait}" alt="Samuel Mercy Oluwatobi Portrait" class="about-portrait-img" fetchpriority="high" decoding="async" />
             <div class="portrait-specular-sheen" aria-hidden="true"></div>
           </div>
         </figure>
@@ -1234,11 +1264,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const imgUrl = p.imageUrl || p.mediaUrl;
     if (imgUrl) {
       const isVertical = p.imageOrientation === 'vertical' || (imgUrl.includes('portrait') || imgUrl.includes('vert'));
+      const optImgUrl = getOptimizedImageUrl(imgUrl, isMobile ? { width: 700 } : { width: 1200 });
       if (isVertical) {
         imageHTML = `
           <div class="project-image-vertical-wrapper cert-clickable-img" data-img-url="${escapeHTML(imgUrl)}" data-caption="${escapeHTML(pTitle)} Architecture" role="button" tabindex="0" title="Click to enlarge architecture diagram">
             <div class="portrait-gilded-casing">
-              <img src="${escapeHTML(imgUrl)}" alt="${escapeHTML(pTitle)} Architecture Diagram" class="project-img-portrait" loading="lazy" />
+              <img src="${escapeHTML(optImgUrl)}" alt="${escapeHTML(pTitle)} Architecture Diagram" class="project-img-portrait" loading="lazy" decoding="async" />
               <div class="cert-zoom-cue" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
                 <span>ENLARGE ARCHITECTURE</span>
@@ -1250,7 +1281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         imageHTML = `
           <div class="project-image-horizontal-wrapper cert-clickable-img" data-img-url="${escapeHTML(imgUrl)}" data-caption="${escapeHTML(pTitle)} Architecture" role="button" tabindex="0" title="Click to enlarge architecture diagram">
             <div class="project-image-frame">
-              <img src="${escapeHTML(imgUrl)}" alt="${escapeHTML(pTitle)} Architecture Diagram" class="project-img-wide" loading="lazy" />
+              <img src="${escapeHTML(optImgUrl)}" alt="${escapeHTML(pTitle)} Architecture Diagram" class="project-img-wide" loading="lazy" decoding="async" />
               <div class="cert-zoom-cue" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
                 <span>ENLARGE ARCHITECTURE</span>
@@ -1660,10 +1691,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let badgeImgHTML = '';
     if (cImgUrl) {
+      const optCertUrl = getOptimizedImageUrl(cImgUrl, { width: 900 });
       badgeImgHTML = `
         <div class="cert-badge-wrapper cert-clickable-img" data-img-url="${escapeHTML(cImgUrl)}" data-caption="${escapeHTML(cTitle)}" role="button" tabindex="0" title="Click to inspect credential in high resolution" aria-label="Inspect ${escapeHTML(cTitle)} Certificate">
           <div class="cert-badge-frame">
-            <img src="${escapeHTML(cImgUrl)}" alt="${escapeHTML(cTitle)} Credential" class="cert-badge-img" loading="lazy" />
+            <img src="${escapeHTML(optCertUrl)}" alt="${escapeHTML(cTitle)} Credential" class="cert-badge-img" loading="lazy" decoding="async" />
             <div class="cert-zoom-cue">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
               ENLARGE
@@ -2589,11 +2621,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function openCertLightbox(url, caption) {
     if (!certLightboxModal || !url) return;
+    const optModalUrl = getOptimizedImageUrl(url, { width: 1600 });
     if (certLightboxImg) {
       certLightboxImg.style.width = 'auto';
       certLightboxImg.style.height = 'auto';
       certLightboxImg.onload = fitCertLightboxImg;
-      certLightboxImg.src = url;
+      certLightboxImg.src = optModalUrl;
       if (certLightboxImg.complete && certLightboxImg.naturalWidth) {
         fitCertLightboxImg();
       }

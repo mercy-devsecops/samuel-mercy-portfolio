@@ -880,17 +880,46 @@
           ]);
           const publishedSections = sections.filter(s => includeDrafts || s.status === 'published');
 
-          // Parallelize all section pages and all item collections in a single round-trip
-          const [pagesEntries, skills, projects, certificates, education, journey] = await Promise.all([
-            Promise.all(publishedSections.map(async sec => [sec.id, await this.getPages(sec.id, includeDrafts)])),
+          // Batch fetch pages in a single query where possible, or fallback to per-section queries
+          const fetchPagesBatch = async () => {
+            if (this.isFirebaseReady && this.db) {
+              try {
+                let pageQuery = this.db.collection('pages');
+                if (!includeDrafts) {
+                  pageQuery = pageQuery.where('status', '==', 'published');
+                }
+                const snap = await pageQuery.get();
+                const pagesBySec = {};
+                publishedSections.forEach(sec => { pagesBySec[sec.id] = []; });
+                snap.docs.forEach(doc => {
+                  const p = { id: doc.id, ...doc.data() };
+                  if (p.sectionId && pagesBySec[p.sectionId]) {
+                    pagesBySec[p.sectionId].push(p);
+                  }
+                });
+                Object.keys(pagesBySec).forEach(secId => {
+                  pagesBySec[secId].sort((a, b) => (a.order || 0) - (b.order || 0));
+                });
+                return pagesBySec;
+              } catch (e) {
+                console.warn('Batch pages query fallback:', e);
+              }
+            }
+            const entries = await Promise.all(
+              publishedSections.map(async sec => [sec.id, await this.getPages(sec.id, includeDrafts)])
+            );
+            return Object.fromEntries(entries);
+          };
+
+          // Parallelize all section pages and all item collections concurrently
+          const [compiledPages, skills, projects, certificates, education, journey] = await Promise.all([
+            fetchPagesBatch(),
             this.getItems('skills', includeDrafts),
             this.getItems('projects', includeDrafts),
             this.getItems('certificates', includeDrafts),
             this.getItems('education', includeDrafts),
             this.getItems('journey', includeDrafts)
           ]);
-
-          const compiledPages = Object.fromEntries(pagesEntries);
 
           const result = {
             home,
@@ -905,7 +934,7 @@
             }
           };
 
-          // Cache verified public data for instant zero-flicker warm loads
+          // Cache verified public data for fast warm loads (15-minute validity window)
           try {
             if (!includeDrafts && typeof localStorage !== 'undefined') {
               const cacheEntry = {
