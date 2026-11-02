@@ -192,47 +192,22 @@
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          // Check if parsed has valid items; if not, or if baseline has richer data, upgrade/merge
-          const hasParsedItems = parsed && parsed.items && (
-            (parsed.items.projects && parsed.items.projects.length > 0) ||
-            (parsed.items.skills && parsed.items.skills.length > 0)
-          );
-          const hasBaselineItems = baseline && baseline.items && (
-            (baseline.items.projects && baseline.items.projects.length > 0) ||
-            (baseline.items.skills && baseline.items.skills.length > 0)
-          );
-
-          if (!hasParsedItems && hasBaselineItems) {
-            const merged = Object.assign({}, baseline, parsed, {
-              home: Object.assign({}, baseline.home || {}, parsed.home || {}),
-              sections: (parsed.sections && parsed.sections.length > 0) ? parsed.sections : (baseline.sections || []),
-              pages: (parsed.pages && Object.keys(parsed.pages).length > 0) ? parsed.pages : (baseline.pages || {}),
-              items: Object.assign({}, baseline.items || {}, parsed.items || {})
-            });
-            if (baseline.items) {
-              for (const [key, arr] of Object.entries(baseline.items)) {
-                if ((!merged.items[key] || merged.items[key].length === 0) && arr && arr.length > 0) {
-                  merged.items[key] = arr;
-                }
-              }
-            }
-            if (baseline.pages) {
-              for (const [secId, pList] of Object.entries(baseline.pages)) {
-                if ((!merged.pages[secId] || merged.pages[secId].length === 0) && pList && pList.length > 0) {
-                  merged.pages[secId] = pList;
-                }
-              }
-            }
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-            return merged;
+          if (parsed && typeof parsed === 'object') {
+            return parsed;
           }
-          return parsed;
         } catch (e) {
           console.warn('Corrupted local storage data. Resetting to baseline.', e);
         }
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(baseline));
       return baseline;
+    }
+
+    invalidatePublicCache() {
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('portfolio_public_cache_v2');
+        }
+      } catch (e) {}
     }
 
     _persistLocalData() {
@@ -518,11 +493,10 @@
             query = query.where('status', '==', 'published');
           }
           const snapshot = await query.get();
-          if (!snapshot.empty) {
-            pages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            pages.sort((a, b) => (a.order || 0) - (b.order || 0));
-            return pages;
-          }
+          // If query succeeded, return snapshot docs directly (empty array if 0 docs exist)
+          pages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          pages.sort((a, b) => (a.order || 0) - (b.order || 0));
+          return pages;
         } catch (err) {
           console.warn('Firestore getPages failed, falling back to local data:', err);
         }
@@ -552,7 +526,17 @@
         page.status = 'draft';
       }
 
-      // 1. Local update
+      // 1. Cloud Firestore update FIRST - Single Source of Truth
+      if (this.isFirebaseReady && this.db) {
+        try {
+          await this.db.collection('pages').doc(page.id).set(page, { merge: true });
+        } catch (err) {
+          console.error('Firestore savePage error:', err);
+          throw new Error('Cloud save failed for page: ' + err.message);
+        }
+      }
+
+      // 2. Only after cloud save succeeds, update local mirror
       if (!this.localData.pages) this.localData.pages = {};
       if (!this.localData.pages[page.sectionId]) this.localData.pages[page.sectionId] = [];
 
@@ -565,72 +549,69 @@
         list.push(page);
       }
       this._persistLocalData();
-
-      // 2. Cloud Firestore update
-      if (this.isFirebaseReady && this.db) {
-        try {
-          await this.db.collection('pages').doc(page.id).set(page, { merge: true });
-        } catch (err) {
-          console.warn('Firestore savePage error:', err);
-        }
-      }
+      this.invalidatePublicCache();
 
       return page;
     }
 
     // Delete Page
     async deletePage(sectionId, pageId) {
-      if (!this.localData.pages || !this.localData.pages[sectionId]) return false;
-
-      this.localData.pages[sectionId] = this.localData.pages[sectionId].filter(p => p.id !== pageId);
-      // Re-index orders
-      this.localData.pages[sectionId].forEach((p, idx) => { p.order = idx + 1; });
-      this._persistLocalData();
-
+      // 1. Cloud Firestore delete FIRST
       if (this.isFirebaseReady && this.db) {
         try {
           await this.db.collection('pages').doc(pageId).delete();
         } catch (err) {
-          console.warn('Firestore deletePage error:', err);
+          console.error('Firestore deletePage error:', err);
+          throw new Error('Cloud delete failed for page: ' + err.message);
         }
       }
+
+      // 2. Local mirror update
+      if (this.localData.pages && this.localData.pages[sectionId]) {
+        this.localData.pages[sectionId] = this.localData.pages[sectionId].filter(p => p.id !== pageId);
+        this.localData.pages[sectionId].forEach((p, idx) => { p.order = idx + 1; });
+        this._persistLocalData();
+      }
+      this.invalidatePublicCache();
 
       return true;
     }
 
     // Reorder Pages
     async reorderPages(sectionId, orderedIds) {
-      if (!this.localData.pages || !this.localData.pages[sectionId]) return [];
-
-      const list = this.localData.pages[sectionId];
-      const pageMap = new Map(list.map(p => [p.id, p]));
-      const reordered = [];
-
-      orderedIds.forEach((id, idx) => {
-        const p = pageMap.get(id);
-        if (p) {
-          p.order = idx + 1;
-          reordered.push(p);
-        }
-      });
-
-      this.localData.pages[sectionId] = reordered;
-      this._persistLocalData();
-
+      // 1. Cloud Firestore batch update FIRST
       if (this.isFirebaseReady && this.db) {
         try {
           const batch = this.db.batch();
-          reordered.forEach(p => {
-            const ref = this.db.collection('pages').doc(p.id);
-            batch.update(ref, { order: p.order, updatedAt: new Date().toISOString() });
+          orderedIds.forEach((id, idx) => {
+            const ref = this.db.collection('pages').doc(id);
+            batch.update(ref, { order: idx + 1, updatedAt: new Date().toISOString() });
           });
           await batch.commit();
         } catch (err) {
-          console.warn('Firestore reorderPages error:', err);
+          console.error('Firestore reorderPages error:', err);
+          throw new Error('Cloud reorder failed for pages: ' + err.message);
         }
       }
 
-      return reordered;
+      // 2. Local mirror update
+      if (this.localData.pages && this.localData.pages[sectionId]) {
+        const list = this.localData.pages[sectionId];
+        const pageMap = new Map(list.map(p => [p.id, p]));
+        const reordered = [];
+        orderedIds.forEach((id, idx) => {
+          const p = pageMap.get(id);
+          if (p) {
+            p.order = idx + 1;
+            reordered.push(p);
+          }
+        });
+        this.localData.pages[sectionId] = reordered;
+        this._persistLocalData();
+      }
+      this.invalidatePublicCache();
+
+      return orderedIds;
     }
 
     // ========================================================================
@@ -654,16 +635,22 @@
 
     async saveHomeData(homeData) {
       homeData.updatedAt = new Date().toISOString();
-      this.localData.home = Object.assign({}, this.localData.home, homeData);
-      this._persistLocalData();
 
+      // 1. Cloud Firestore write FIRST - Single Source of Truth
       if (this.isFirebaseReady && this.db) {
         try {
           await this.db.collection('settings').doc('home').set(homeData, { merge: true });
         } catch (err) {
-          console.warn('Firestore saveHomeData error:', err);
+          console.error('Firestore saveHomeData error:', err);
+          throw new Error('Cloud save failed for home settings: ' + err.message);
         }
       }
+
+      // 2. Only after cloud save succeeds, update local mirror
+      this.localData.home = Object.assign({}, this.localData.home, homeData);
+      this._persistLocalData();
+      this.invalidatePublicCache();
+
       return this.localData.home;
     }
 
@@ -681,13 +668,12 @@
             query = query.where('status', '==', 'published');
           }
           const snapshot = await query.get();
-          if (!snapshot.empty) {
-            items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            items.sort((a, b) => (a.order || 0) - (b.order || 0));
-            return items;
-          }
+          // If query succeeded, return snapshot docs directly (empty array if 0 docs exist)
+          items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          items.sort((a, b) => (a.order || 0) - (b.order || 0));
+          return items;
         } catch (err) {
-          console.warn(`Firestore getItems(${collectionName}) error:`, err);
+          console.warn(`Firestore getItems(${collectionName}) error, falling back:`, err);
         }
       }
 
@@ -706,6 +692,17 @@
       if (!item.createdAt) item.createdAt = item.updatedAt;
       if (!item.status) item.status = 'draft';
 
+      // 1. Cloud Firestore write FIRST - Single Source of Truth
+      if (this.isFirebaseReady && this.db) {
+        try {
+          await this.db.collection(collectionName).doc(item.id).set(item, { merge: true });
+        } catch (err) {
+          console.error(`Firestore saveItem(${collectionName}) write failed:`, err);
+          throw new Error(`Cloud save failed for ${collectionName}: ${err.message}`);
+        }
+      }
+
+      // 2. Only after cloud save succeeds, update local mirror
       if (!this.localData.items) this.localData.items = {};
       if (!this.localData.items[collectionName]) this.localData.items[collectionName] = [];
 
@@ -718,68 +715,69 @@
         list.push(item);
       }
       this._persistLocalData();
-
-      if (this.isFirebaseReady && this.db) {
-        try {
-          await this.db.collection(collectionName).doc(item.id).set(item, { merge: true });
-        } catch (err) {
-          console.warn(`Firestore saveItem(${collectionName}) error:`, err);
-        }
-      }
+      this.invalidatePublicCache();
 
       return item;
     }
 
     async deleteItem(collectionName, itemId) {
-      if (!this.localData.items || !this.localData.items[collectionName]) return false;
-
-      this.localData.items[collectionName] = this.localData.items[collectionName].filter(it => it.id !== itemId);
-      this.localData.items[collectionName].forEach((it, idx) => { it.order = idx + 1; });
-      this._persistLocalData();
-
+      // 1. Cloud Firestore delete FIRST - Single Source of Truth
       if (this.isFirebaseReady && this.db) {
         try {
           await this.db.collection(collectionName).doc(itemId).delete();
         } catch (err) {
-          console.warn(`Firestore deleteItem(${collectionName}) error:`, err);
+          console.error(`Firestore deleteItem(${collectionName}) failed:`, err);
+          throw new Error(`Cloud delete failed for ${collectionName}: ${err.message}`);
         }
       }
+
+      // 2. Only after cloud delete succeeds, update local mirror
+      if (this.localData.items && this.localData.items[collectionName]) {
+        this.localData.items[collectionName] = this.localData.items[collectionName].filter(it => it.id !== itemId);
+        this.localData.items[collectionName].forEach((it, idx) => { it.order = idx + 1; });
+        this._persistLocalData();
+      }
+      this.invalidatePublicCache();
 
       return true;
     }
 
     async reorderItems(collectionName, orderedIds) {
-      if (!this.localData.items || !this.localData.items[collectionName]) return [];
-
-      const list = this.localData.items[collectionName];
-      const itemMap = new Map(list.map(it => [it.id, it]));
-      const reordered = [];
-
-      orderedIds.forEach((id, idx) => {
-        const it = itemMap.get(id);
-        if (it) {
-          it.order = idx + 1;
-          reordered.push(it);
-        }
-      });
-
-      this.localData.items[collectionName] = reordered;
-      this._persistLocalData();
-
+      // 1. Cloud Firestore batch commit FIRST
       if (this.isFirebaseReady && this.db) {
         try {
           const batch = this.db.batch();
-          reordered.forEach(it => {
-            const ref = this.db.collection(collectionName).doc(it.id);
-            batch.update(ref, { order: it.order, updatedAt: new Date().toISOString() });
+          orderedIds.forEach((id, idx) => {
+            const ref = this.db.collection(collectionName).doc(id);
+            batch.update(ref, { order: idx + 1, updatedAt: new Date().toISOString() });
           });
           await batch.commit();
         } catch (err) {
-          console.warn(`Firestore reorderItems(${collectionName}) error:`, err);
+          console.error(`Firestore reorderItems(${collectionName}) failed:`, err);
+          throw new Error(`Cloud reorder failed for ${collectionName}: ${err.message}`);
         }
       }
 
-      return reordered;
+      // 2. Local mirror update
+      if (this.localData.items && this.localData.items[collectionName]) {
+        const list = this.localData.items[collectionName];
+        const itemMap = new Map(list.map(it => [it.id, it]));
+        const reordered = [];
+
+        orderedIds.forEach((id, idx) => {
+          const it = itemMap.get(id);
+          if (it) {
+            it.order = idx + 1;
+            reordered.push(it);
+          }
+        });
+
+        this.localData.items[collectionName] = reordered;
+        this._persistLocalData();
+      }
+      this.invalidatePublicCache();
+
+      return orderedIds;
     }
 
     // ========================================================================
@@ -868,29 +866,64 @@
     // ========================================================================
 
     async getPublicPortfolioData(includeDrafts = false) {
-      const home = await this.getHomeData();
-      const sections = await this.getSections();
-      const publishedSections = sections.filter(s => includeDrafts || s.status === 'published');
-
-      const compiledPages = {};
-      for (const sec of publishedSections) {
-        compiledPages[sec.id] = await this.getPages(sec.id, includeDrafts);
+      const cacheKey = includeDrafts ? 'drafts' : 'public';
+      if (this._inFlightPublicPromise && this._inFlightPublicPromise[cacheKey]) {
+        return this._inFlightPublicPromise[cacheKey];
       }
+      this._inFlightPublicPromise = this._inFlightPublicPromise || {};
+      this._inFlightPublicPromise[cacheKey] = (async () => {
+        try {
+          // Parallelize home and sections query
+          const [home, sections] = await Promise.all([
+            this.getHomeData(),
+            this.getSections()
+          ]);
+          const publishedSections = sections.filter(s => includeDrafts || s.status === 'published');
 
-      const items = {
-        skills: await this.getItems('skills', includeDrafts),
-        projects: await this.getItems('projects', includeDrafts),
-        certificates: await this.getItems('certificates', includeDrafts),
-        education: await this.getItems('education', includeDrafts),
-        journey: await this.getItems('journey', includeDrafts)
-      };
+          // Parallelize all section pages and all item collections in a single round-trip
+          const [pagesEntries, skills, projects, certificates, education, journey] = await Promise.all([
+            Promise.all(publishedSections.map(async sec => [sec.id, await this.getPages(sec.id, includeDrafts)])),
+            this.getItems('skills', includeDrafts),
+            this.getItems('projects', includeDrafts),
+            this.getItems('certificates', includeDrafts),
+            this.getItems('education', includeDrafts),
+            this.getItems('journey', includeDrafts)
+          ]);
 
-      return {
-        home,
-        sections: publishedSections,
-        pages: compiledPages,
-        items
-      };
+          const compiledPages = Object.fromEntries(pagesEntries);
+
+          const result = {
+            home,
+            sections: publishedSections,
+            pages: compiledPages,
+            items: {
+              skills,
+              projects,
+              certificates,
+              education,
+              journey
+            }
+          };
+
+          // Cache verified public data for instant zero-flicker warm loads
+          try {
+            if (!includeDrafts && typeof localStorage !== 'undefined') {
+              const cacheEntry = {
+                version: 2,
+                timestamp: Date.now(),
+                data: result
+              };
+              localStorage.setItem('portfolio_public_cache_v2', JSON.stringify(cacheEntry));
+            }
+          } catch (e) {}
+
+          return result;
+        } finally {
+          delete this._inFlightPublicPromise[cacheKey];
+        }
+      })();
+
+      return this._inFlightPublicPromise[cacheKey];
     }
 
     // ========================================================================

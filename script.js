@@ -193,15 +193,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             isAboutEditorial: (idx === 0)
           }));
         } else {
-          sectionPages = [{
-            id: 'about-1',
-            sectionId: 'about',
-            title: 'Overview',
-            subtitle: 'IDENTITY & PURPOSE',
-            pageNum: 1,
-            isEmpty: true,
-            isAboutEditorial: true
-          }];
+          sectionPages = [];
         }
       } else if (sec.id === 'skills') {
         const rawSkills = itemsMap.skills || [];
@@ -210,16 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const publishedSkills = rawSkills.filter(s => isPreview || (s.status || 'published') === 'published');
 
         if (publishedSkills.length === 0) {
-          sectionPages = [{
-            id: 'skills-empty',
-            sectionId: 'skills',
-            title: 'Technical Arsenal',
-            subtitle: 'SPECIALIZED DISCIPLINES',
-            pageNum: 1,
-            isEmpty: true,
-            type: 'skills',
-            items: []
-          }];
+          sectionPages = [];
         } else {
           const categorizedGroups = groupSkillsIntoCategories(publishedSkills);
 
@@ -382,15 +365,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
           });
         } else {
-          sectionPages = [{
-            id: 'projects-empty',
-            sectionId: 'projects',
-            title: 'Systems Architecture',
-            subtitle: 'ARCHITECTURAL ARCHIVES',
-            pageNum: 1,
-            isEmpty: true,
-            type: 'projects'
-          }];
+          sectionPages = [];
         }
       } else if (sec.id === 'certificates') {
         const certList = itemsMap.certificates || [];
@@ -409,15 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
           }
         } else {
-          sectionPages = [{
-            id: 'cert-1',
-            sectionId: 'certificates',
-            title: 'Professional Credential',
-            subtitle: 'VERIFIED CREDENTIAL',
-            pageNum: 1,
-            isEmpty: true,
-            type: 'certificates'
-          }];
+          sectionPages = [];
         }
       } else if (sec.id === 'education') {
         const eduList = itemsMap.education || [];
@@ -436,15 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
           }
         } else {
-          sectionPages = [{
-            id: 'edu-1',
-            sectionId: 'education',
-            title: 'Academic Foundation',
-            subtitle: 'COMPUTING & ENGINEERING',
-            pageNum: 1,
-            isEmpty: true,
-            type: 'education'
-          }];
+          sectionPages = [];
         }
       } else if (sec.id === 'journey') {
         const journeyList = (itemsMap.journey || []).filter(j => (j.status || 'published') === 'published');
@@ -476,15 +435,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
           });
         } else {
-          sectionPages = [{
-            id: 'journey-empty',
-            sectionId: 'journey',
-            title: 'My Journey',
-            subtitle: 'EVOLUTION & MILESTONES',
-            pageNum: 1,
-            isEmpty: true,
-            type: 'journey-timeline'
-          }];
+          // No published journey items: do not generate empty or phantom journey pages
+          sectionPages = [];
         }
       } else if (sec.id === 'contact') {
         const contactPages = pagesMap.contact || [];
@@ -515,14 +467,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         ];
       }
 
-
-      sections.push({
-        id: sec.id,
-        title: sec.title,
-        chapter: sec.chapter,
-        isCover: false,
-        pages: sectionPages
-      });
+      // Only include sections that contain actual pages
+      if (sectionPages.length > 0) {
+        sections.push({
+          id: sec.id,
+          title: sec.title,
+          chapter: sec.chapter,
+          isCover: false,
+          pages: sectionPages
+        });
+      }
     });
 
     return sections;
@@ -662,6 +616,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Helper to compile synchronous local snapshot for instant zero-latency book setup
   function getSynchronousPortfolioData(includeDrafts) {
+    // 1. If we have a verified fresh public cache from a previous session, validate and use it for zero-flicker load
+    if (!includeDrafts && typeof localStorage !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('portfolio_public_cache_v2');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          const payload = (parsed && parsed.data) ? parsed.data : parsed;
+          if (payload && payload.home && Array.isArray(payload.sections) && payload.items) {
+            const hasCollections = ['skills', 'projects', 'certificates', 'education', 'journey'].every(
+              k => Array.isArray(payload.items[k])
+            );
+            if (hasCollections) {
+              return payload;
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
     const raw = (window.portfolioService && window.portfolioService.localData) ||
       (window.PORTFOLIO_CONFIG ? window.PORTFOLIO_CONFIG.baseline : null) || {};
 
@@ -674,7 +647,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const items = {};
     const rawItems = raw.items || {};
     for (const key of ['skills', 'projects', 'certificates', 'education', 'journey']) {
-      items[key] = (rawItems[key] || []).filter(it => includeDrafts || it.status === 'published');
+      // For unauthenticated public visitors without a valid cloud cache,
+      // never seed obsolete baseline items that can flash before Firestore responds.
+      if (!_isAdmin) {
+        items[key] = [];
+      } else {
+        items[key] = (rawItems[key] || []).filter(it => includeDrafts || it.status === 'published');
+      }
     }
 
     return {
@@ -705,6 +684,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     MOBILE_SECTION_MAP = mRes.mobileSectionMap;
     if (data.home) updateCoverElements(data.home);
 
+    // Sync navigation sidebar buttons with available sections (hides empty/deleted sections like journey)
+    const activeSectionIds = new Set(SECTIONS.map(s => s.id));
+    activeSectionIds.add('home');
+    navButtons.forEach(btn => {
+      const secId = btn.dataset.sectionId;
+      const li = btn.closest('.nav-li');
+      if (li) {
+        li.style.display = activeSectionIds.has(secId) ? '' : 'none';
+      }
+    });
+
     // Safeguard index boundaries if number of pages changed
     if (BOOK_SPREADS.length > 0 && currentSpreadIndex >= BOOK_SPREADS.length) {
       currentSpreadIndex = Math.max(0, BOOK_SPREADS.length - 1);
@@ -732,16 +722,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   let MOBILE_SECTION_MAP = {};
   applyPortfolioData(currentPortfolioData);
 
-  // 2. Load cloud Firestore data asynchronously in background without blocking book interaction
-  if (window.portfolioService) {
+  // 2. Load cloud Firestore data asynchronously with loading indicator & retry on failure
+  function loadCloudPortfolio() {
+    if (!window.portfolioService) return;
+
+    if (pageFlipperPill && flipperStatusMsg) {
+      pageFlipperPill.style.display = 'flex';
+      flipperStatusMsg.innerHTML = '<span class="flipper-sync-text">Synchronizing portfolio&hellip;</span>';
+    }
+
     window.portfolioService.getPublicPortfolioData(isPreviewMode).then(data => {
       if (!data) return;
       applyPortfolioData(data);
       safeRenderAfterUpdate();
+      // If still on closed cover, hide the sync pill
+      if (currentSpreadIndex === 0 && currentMobileIndex === 0 && pageFlipperPill) {
+        pageFlipperPill.style.display = 'none';
+      }
     }).catch(err => {
-      console.warn('Background portfolio sync notice:', err);
+      console.warn('Portfolio sync warning:', err);
+      if (pageFlipperPill && flipperStatusMsg) {
+        pageFlipperPill.style.display = 'flex';
+        flipperStatusMsg.innerHTML = '<span style="color:#f28b82;">Connection issue</span> <button id="btnRetrySync" style="background:transparent; border:1px solid #d4af37; color:#d4af37; border-radius:3px; padding:1px 6px; margin-left:6px; cursor:pointer; font-size:11px;">Retry</button>';
+        const btnRetry = document.getElementById('btnRetrySync');
+        if (btnRetry) {
+          btnRetry.addEventListener('click', (e) => {
+            e.stopPropagation();
+            loadCloudPortfolio();
+          });
+        }
+      }
     });
   }
+
+  loadCloudPortfolio();
 
   // Listen for real-time data changes from Admin
   if (window.portfolioService) {
