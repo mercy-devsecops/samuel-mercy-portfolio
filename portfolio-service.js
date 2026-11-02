@@ -15,7 +15,6 @@
 (function(window) {
   'use strict';
 
-  const STORAGE_KEY = 'smo_portfolio_data_v1';
   const AUTH_SESSION_KEY = 'smo_admin_session_v1';
   const CONFIG_OVERRIDE_KEY = 'smo_config_override_v1';
 
@@ -28,9 +27,6 @@
       this.db = null;
       this.auth = null;
       this._authUnsubscribe = null; // Holds onAuthStateChanged unsubscribe fn
-
-      // Initialize local data mirror
-      this.localData = this._initLocalData();
 
       // Initialize Firebase if SDK is available
       this._initFirebase();
@@ -182,79 +178,33 @@
     }
 
     // ========================================================================
-    // 3. Local Data Mirror & Persistence
+    // 3. Cloud Firestore Backup & Export Operations (Single Source of Truth)
     // ========================================================================
 
-    _initLocalData() {
-      const baseline = (window.PORTFOLIO_CONFIG && window.PORTFOLIO_CONFIG.baseline) ? 
-        JSON.parse(JSON.stringify(window.PORTFOLIO_CONFIG.baseline)) : {};
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          // Check if parsed has valid items; if not, or if baseline has richer data, upgrade/merge
-          const hasParsedItems = parsed && parsed.items && (
-            (parsed.items.projects && parsed.items.projects.length > 0) ||
-            (parsed.items.skills && parsed.items.skills.length > 0)
-          );
-          const hasBaselineItems = baseline && baseline.items && (
-            (baseline.items.projects && baseline.items.projects.length > 0) ||
-            (baseline.items.skills && baseline.items.skills.length > 0)
-          );
-
-          if (!hasParsedItems && hasBaselineItems) {
-            const merged = Object.assign({}, baseline, parsed, {
-              home: Object.assign({}, baseline.home || {}, parsed.home || {}),
-              sections: (parsed.sections && parsed.sections.length > 0) ? parsed.sections : (baseline.sections || []),
-              pages: (parsed.pages && Object.keys(parsed.pages).length > 0) ? parsed.pages : (baseline.pages || {}),
-              items: Object.assign({}, baseline.items || {}, parsed.items || {})
-            });
-            if (baseline.items) {
-              for (const [key, arr] of Object.entries(baseline.items)) {
-                if ((!merged.items[key] || merged.items[key].length === 0) && arr && arr.length > 0) {
-                  merged.items[key] = arr;
-                }
-              }
-            }
-            if (baseline.pages) {
-              for (const [secId, pList] of Object.entries(baseline.pages)) {
-                if ((!merged.pages[secId] || merged.pages[secId].length === 0) && pList && pList.length > 0) {
-                  merged.pages[secId] = pList;
-                }
-              }
-            }
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-            return merged;
-          }
-          return parsed;
-        } catch (e) {
-          console.warn('Corrupted local storage data. Resetting to baseline.', e);
+    // Export current portfolio data directly from live Cloud Firestore
+    async exportBackupData() {
+      const liveData = await this.getPublicPortfolioData(true);
+      return {
+        exportedAt: new Date().toISOString(),
+        version: '2.0',
+        author: 'Samuel Mercy Oluwatobi',
+        source: 'Firebase Firestore',
+        data: {
+          portfolioData: liveData,
+          configOverride: localStorage.getItem(CONFIG_OVERRIDE_KEY) ? JSON.parse(localStorage.getItem(CONFIG_OVERRIDE_KEY)) : null
         }
+      };
+    }
+
+    // Import backup JSON directly into Cloud Firestore
+    async importBackupData(backupJson) {
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore is not initialized or connected.');
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(baseline));
-      return baseline;
-    }
-
-    _persistLocalData() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.localData));
-        this.emit('data:changed', this.localData);
-      } catch (err) {
-        console.error('Failed to persist local data:', err);
+      if (!this.isAuthenticated() || !this.auth || !this.auth.currentUser) {
+        throw new Error('Active administrator authentication required to import data.');
       }
-    }
 
-    // Reset to approved master baseline
-    resetToBaseline() {
-      const baseline = (window.PORTFOLIO_CONFIG && window.PORTFOLIO_CONFIG.baseline) ? 
-        JSON.parse(JSON.stringify(window.PORTFOLIO_CONFIG.baseline)) : {};
-      this.localData = baseline;
-      this._persistLocalData();
-      return this.localData;
-    }
-
-    // Import full backup JSON
-    importBackupData(backupJson) {
       let rawData = null;
       if (typeof backupJson === 'string') {
         try {
@@ -279,22 +229,35 @@
         throw new Error('Unrecognized portfolio backup format. Could not locate portfolio data.');
       }
 
-      this.localData = JSON.parse(JSON.stringify(target));
-      this._persistLocalData();
-      return this.localData;
-    }
-
-    // Export current portfolio data
-    exportBackupData() {
-      return {
-        exportedAt: new Date().toISOString(),
-        version: '1.0',
-        author: 'Samuel Mercy Oluwatobi',
-        data: {
-          portfolioData: JSON.parse(JSON.stringify(this.localData)),
-          configOverride: localStorage.getItem(CONFIG_OVERRIDE_KEY) ? JSON.parse(localStorage.getItem(CONFIG_OVERRIDE_KEY)) : null
+      if (target.home) {
+        await this.db.collection('settings').doc('home').set(target.home, { merge: true });
+      }
+      if (Array.isArray(target.sections)) {
+        for (const s of target.sections) {
+          await this.db.collection('sections').doc(s.id).set(s, { merge: true });
         }
-      };
+      }
+      if (target.pages && typeof target.pages === 'object') {
+        for (const [secId, pList] of Object.entries(target.pages)) {
+          if (Array.isArray(pList)) {
+            for (const p of pList) {
+              await this.db.collection('pages').doc(p.id).set(p, { merge: true });
+            }
+          }
+        }
+      }
+      if (target.items && typeof target.items === 'object') {
+        for (const [col, list] of Object.entries(target.items)) {
+          if (Array.isArray(list)) {
+            for (const it of list) {
+              await this.db.collection(col).doc(it.id).set(it, { merge: true });
+            }
+          }
+        }
+      }
+
+      this.emit('data:changed');
+      return target;
     }
 
     // Helper to migrate large base64 data to Cloudinary via unsigned upload with verification
@@ -490,52 +453,42 @@
     }
 
     // ========================================================================
-    // 4. Section & Pages Operations (SECTION → PAGES[] Architecture)
+    // 4. Section & Pages Operations (Pure Cloud Firestore Architecture)
     // ========================================================================
 
     // Get Sections (HOME, ABOUT ME, SKILLS, PROJECTS, CERTIFICATES, EDUCATION, JOURNEY, CONTACT)
     async getSections() {
-      if (this.isFirebaseReady && this.db) {
-        try {
-          const snapshot = await this.db.collection('sections').orderBy('order').get();
-          if (!snapshot.empty) {
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          }
-        } catch (err) {
-          console.warn('Firestore getSections failed, falling back to local data:', err);
-        }
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
       }
-      return (this.localData.sections || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+      const snapshot = await this.db.collection('sections').orderBy('order').get();
+      if (snapshot.empty) return [];
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
 
-    // Get Pages for a Section (Dynamic pages: 1, 2, 3, 4, 5+ pages)
+    // Get Pages for a Section (Dynamic pages)
     async getPages(sectionId, includeDrafts = true) {
-      let pages = [];
-      if (this.isFirebaseReady && this.db) {
-        try {
-          let query = this.db.collection('pages').where('sectionId', '==', sectionId);
-          if (!includeDrafts) {
-            query = query.where('status', '==', 'published');
-          }
-          const snapshot = await query.get();
-          if (!snapshot.empty) {
-            pages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            pages.sort((a, b) => (a.order || 0) - (b.order || 0));
-            return pages;
-          }
-        } catch (err) {
-          console.warn('Firestore getPages failed, falling back to local data:', err);
-        }
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
       }
-
-      const allSectionPages = (this.localData.pages && this.localData.pages[sectionId]) || [];
-      pages = allSectionPages.filter(pg => includeDrafts || pg.status === 'published');
+      let query = this.db.collection('pages').where('sectionId', '==', sectionId);
+      if (!includeDrafts || !this.isAuthenticated()) {
+        query = query.where('status', '==', 'published');
+      }
+      const snapshot = await query.get();
+      const pages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       pages.sort((a, b) => (a.order || 0) - (b.order || 0));
       return pages;
     }
 
-    // Save Page (Create or Update)
+    // Save Page (Create or Update directly in Firestore)
     async savePage(page) {
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
+      }
+      if (!this.isAuthenticated() || !this.auth || !this.auth.currentUser) {
+        throw new Error('Active administrator authentication required to save page.');
+      }
       if (!page || !page.sectionId) {
         throw new Error('Page must have a sectionId.');
       }
@@ -545,159 +498,104 @@
       }
 
       page.updatedAt = new Date().toISOString();
-      if (!page.createdAt) {
-        page.createdAt = page.updatedAt;
-      }
-      if (!page.status) {
-        page.status = 'draft';
-      }
+      if (!page.createdAt) page.createdAt = page.updatedAt;
+      if (!page.status) page.status = 'draft';
 
-      // 1. Local update
-      if (!this.localData.pages) this.localData.pages = {};
-      if (!this.localData.pages[page.sectionId]) this.localData.pages[page.sectionId] = [];
-
-      const list = this.localData.pages[page.sectionId];
-      const existingIdx = list.findIndex(p => p.id === page.id);
-      if (existingIdx >= 0) {
-        list[existingIdx] = Object.assign({}, list[existingIdx], page);
-      } else {
-        if (!page.order) page.order = list.length + 1;
-        list.push(page);
-      }
-      this._persistLocalData();
-
-      // 2. Cloud Firestore update
-      if (this.isFirebaseReady && this.db) {
-        try {
-          await this.db.collection('pages').doc(page.id).set(page, { merge: true });
-        } catch (err) {
-          console.warn('Firestore savePage error:', err);
-        }
+      // Auto-migrate base64 media if present
+      if (page.mediaUrl && page.mediaUrl.startsWith('data:image/')) {
+        page.mediaUrl = await this.ensureCloudinaryImage(page.mediaUrl, 'portfolio/pages');
       }
 
+      await this.db.collection('pages').doc(page.id).set(page, { merge: true });
+      this.emit('data:changed');
       return page;
     }
 
-    // Delete Page
+    // Delete Page directly from Firestore
     async deletePage(sectionId, pageId) {
-      if (!this.localData.pages || !this.localData.pages[sectionId]) return false;
-
-      this.localData.pages[sectionId] = this.localData.pages[sectionId].filter(p => p.id !== pageId);
-      // Re-index orders
-      this.localData.pages[sectionId].forEach((p, idx) => { p.order = idx + 1; });
-      this._persistLocalData();
-
-      if (this.isFirebaseReady && this.db) {
-        try {
-          await this.db.collection('pages').doc(pageId).delete();
-        } catch (err) {
-          console.warn('Firestore deletePage error:', err);
-        }
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
       }
-
+      if (!this.isAuthenticated() || !this.auth || !this.auth.currentUser) {
+        throw new Error('Active administrator authentication required to delete page.');
+      }
+      await this.db.collection('pages').doc(pageId).delete();
+      this.emit('data:changed');
       return true;
     }
 
-    // Reorder Pages
+    // Reorder Pages directly in Firestore
     async reorderPages(sectionId, orderedIds) {
-      if (!this.localData.pages || !this.localData.pages[sectionId]) return [];
-
-      const list = this.localData.pages[sectionId];
-      const pageMap = new Map(list.map(p => [p.id, p]));
-      const reordered = [];
-
-      orderedIds.forEach((id, idx) => {
-        const p = pageMap.get(id);
-        if (p) {
-          p.order = idx + 1;
-          reordered.push(p);
-        }
-      });
-
-      this.localData.pages[sectionId] = reordered;
-      this._persistLocalData();
-
-      if (this.isFirebaseReady && this.db) {
-        try {
-          const batch = this.db.batch();
-          reordered.forEach(p => {
-            const ref = this.db.collection('pages').doc(p.id);
-            batch.update(ref, { order: p.order, updatedAt: new Date().toISOString() });
-          });
-          await batch.commit();
-        } catch (err) {
-          console.warn('Firestore reorderPages error:', err);
-        }
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
       }
-
-      return reordered;
+      const batch = this.db.batch();
+      orderedIds.forEach((id, idx) => {
+        const ref = this.db.collection('pages').doc(id);
+        batch.update(ref, { order: idx + 1, updatedAt: new Date().toISOString() });
+      });
+      await batch.commit();
+      this.emit('data:changed');
+      return this.getPages(sectionId, true);
     }
 
     // ========================================================================
     // 5. Section Specific Entities (HOME, SKILLS, PROJECTS, CERTIFICATES, etc.)
     // ========================================================================
 
-    // HOME Cover Settings
+    // HOME Cover Settings directly in Firestore
     async getHomeData() {
-      if (this.isFirebaseReady && this.db) {
-        try {
-          const doc = await this.db.collection('settings').doc('home').get();
-          if (doc.exists) {
-            return doc.data();
-          }
-        } catch (err) {
-          console.warn('Firestore getHomeData error, falling back:', err);
-        }
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
       }
-      return Object.assign({}, this.localData.home || {});
+      const doc = await this.db.collection('settings').doc('home').get();
+      if (!doc.exists) {
+        throw new Error('Home cover settings not found in Firestore.');
+      }
+      return doc.data();
     }
 
     async saveHomeData(homeData) {
-      homeData.updatedAt = new Date().toISOString();
-      this.localData.home = Object.assign({}, this.localData.home, homeData);
-      this._persistLocalData();
-
-      if (this.isFirebaseReady && this.db) {
-        try {
-          await this.db.collection('settings').doc('home').set(homeData, { merge: true });
-        } catch (err) {
-          console.warn('Firestore saveHomeData error:', err);
-        }
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
       }
-      return this.localData.home;
+      if (!this.isAuthenticated() || !this.auth || !this.auth.currentUser) {
+        throw new Error('Active administrator authentication required to save home settings.');
+      }
+      homeData.updatedAt = new Date().toISOString();
+
+      if (homeData.heroImage && homeData.heroImage.startsWith('data:image/')) {
+        homeData.heroImage = await this.ensureCloudinaryImage(homeData.heroImage, 'portfolio/home');
+      }
+
+      await this.db.collection('settings').doc('home').set(homeData, { merge: true });
+      this.emit('data:changed');
+      return homeData;
     }
 
     // Generic Structured Items Manager (skills, projects, certificates, education, journey)
     async getItems(collectionName, includeDrafts = true) {
-      let items = [];
-      if (this.isFirebaseReady && this.db) {
-        try {
-          let query = this.db.collection(collectionName);
-          // Always filter to published when: (a) caller explicitly excludes drafts,
-          // OR (b) the current session is unauthenticated (second line of defence
-          // against any future code path that incorrectly passes includeDrafts=true
-          // from a public/unauthenticated context).
-          if (!includeDrafts || !this.isAuthenticated()) {
-            query = query.where('status', '==', 'published');
-          }
-          const snapshot = await query.get();
-          if (!snapshot.empty) {
-            items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            items.sort((a, b) => (a.order || 0) - (b.order || 0));
-            return items;
-          }
-        } catch (err) {
-          console.warn(`Firestore getItems(${collectionName}) error:`, err);
-        }
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
       }
-
-      const list = (this.localData.items && this.localData.items[collectionName]) || [];
-      items = list.filter(it => includeDrafts || it.status === 'published');
+      let query = this.db.collection(collectionName);
+      if (!includeDrafts || !this.isAuthenticated()) {
+        query = query.where('status', '==', 'published');
+      }
+      const snapshot = await query.get();
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       items.sort((a, b) => (a.order || 0) - (b.order || 0));
       return items;
     }
 
     async saveItem(collectionName, item) {
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
+      }
+      if (!this.isAuthenticated() || !this.auth || !this.auth.currentUser) {
+        throw new Error('Active administrator authentication required to save records.');
+      }
+
       if (!item.id) {
         item.id = `${collectionName}-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
       }
@@ -706,80 +604,41 @@
       if (!item.createdAt) item.createdAt = item.updatedAt;
       if (!item.status) item.status = 'draft';
 
-      if (!this.localData.items) this.localData.items = {};
-      if (!this.localData.items[collectionName]) this.localData.items[collectionName] = [];
-
-      const list = this.localData.items[collectionName];
-      const existingIdx = list.findIndex(it => it.id === item.id);
-      if (existingIdx >= 0) {
-        list[existingIdx] = Object.assign({}, list[existingIdx], item);
-      } else {
-        if (!item.order) item.order = list.length + 1;
-        list.push(item);
-      }
-      this._persistLocalData();
-
-      if (this.isFirebaseReady && this.db) {
-        try {
-          await this.db.collection(collectionName).doc(item.id).set(item, { merge: true });
-        } catch (err) {
-          console.warn(`Firestore saveItem(${collectionName}) error:`, err);
+      for (const imgField of ['imageUrl', 'coverImage']) {
+        if (item[imgField] && item[imgField].startsWith('data:image/')) {
+          item[imgField] = await this.ensureCloudinaryImage(item[imgField], `portfolio/${collectionName}`);
         }
       }
 
+      await this.db.collection(collectionName).doc(item.id).set(item, { merge: true });
+      this.emit('data:changed');
       return item;
     }
 
     async deleteItem(collectionName, itemId) {
-      if (!this.localData.items || !this.localData.items[collectionName]) return false;
-
-      this.localData.items[collectionName] = this.localData.items[collectionName].filter(it => it.id !== itemId);
-      this.localData.items[collectionName].forEach((it, idx) => { it.order = idx + 1; });
-      this._persistLocalData();
-
-      if (this.isFirebaseReady && this.db) {
-        try {
-          await this.db.collection(collectionName).doc(itemId).delete();
-        } catch (err) {
-          console.warn(`Firestore deleteItem(${collectionName}) error:`, err);
-        }
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
       }
-
+      if (!this.isAuthenticated() || !this.auth || !this.auth.currentUser) {
+        throw new Error('Active administrator authentication required to delete records.');
+      }
+      await this.db.collection(collectionName).doc(itemId).delete();
+      this.emit('data:changed');
       return true;
     }
 
     async reorderItems(collectionName, orderedIds) {
-      if (!this.localData.items || !this.localData.items[collectionName]) return [];
-
-      const list = this.localData.items[collectionName];
-      const itemMap = new Map(list.map(it => [it.id, it]));
-      const reordered = [];
-
-      orderedIds.forEach((id, idx) => {
-        const it = itemMap.get(id);
-        if (it) {
-          it.order = idx + 1;
-          reordered.push(it);
-        }
-      });
-
-      this.localData.items[collectionName] = reordered;
-      this._persistLocalData();
-
-      if (this.isFirebaseReady && this.db) {
-        try {
-          const batch = this.db.batch();
-          reordered.forEach(it => {
-            const ref = this.db.collection(collectionName).doc(it.id);
-            batch.update(ref, { order: it.order, updatedAt: new Date().toISOString() });
-          });
-          await batch.commit();
-        } catch (err) {
-          console.warn(`Firestore reorderItems(${collectionName}) error:`, err);
-        }
+      if (!this.isFirebaseReady || !this.db) {
+        throw new Error('Cloud Firestore database is unavailable.');
       }
-
-      return reordered;
+      const batch = this.db.batch();
+      orderedIds.forEach((id, idx) => {
+        const ref = this.db.collection(collectionName).doc(id);
+        batch.update(ref, { order: idx + 1, updatedAt: new Date().toISOString() });
+      });
+      await batch.commit();
+      this.emit('data:changed');
+      return this.getItems(collectionName, true);
     }
 
     // ========================================================================

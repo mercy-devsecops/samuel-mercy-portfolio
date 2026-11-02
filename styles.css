@@ -5478,3 +5478,61 @@ a {
   .contact-email-link       { font-size: 14.5px !important; }
   .contact-network-name     { font-size: 14.5px !important; }
 }
+
+/* ── CLOUD ERROR STATE (Luxury Vintage Theme) ── */
+.cloud-error-banner {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 8, 12, 0.92);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.cloud-error-content {
+  background: #181410;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  padding: 32px 28px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.15);
+}
+.cloud-error-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+.cloud-error-title {
+  font-family: 'Cinzel', serif;
+  color: #f5dc94;
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+.cloud-error-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #c0b8ac;
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.cloud-error-retry-btn {
+  background: linear-gradient(135deg, #d4af37, #9a752e);
+  color: #1a0f02;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.cloud-error-retry-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(212,175,55,0.4);
+}

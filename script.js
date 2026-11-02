@@ -660,29 +660,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   const _isAdmin = window.portfolioService && window.portfolioService.isAuthenticated();
   const isPreviewMode = _previewRequested && _isAdmin;
 
-  // Helper to compile synchronous local snapshot for instant zero-latency book setup
-  function getSynchronousPortfolioData(includeDrafts) {
-    const raw = (window.portfolioService && window.portfolioService.localData) ||
-      (window.PORTFOLIO_CONFIG ? window.PORTFOLIO_CONFIG.baseline : null) || {};
-
-    const sections = (raw.sections || []).filter(s => includeDrafts || s.status === 'published');
-    const pages = {};
-    for (const sec of sections) {
-      const pList = (raw.pages && raw.pages[sec.id]) || [];
-      pages[sec.id] = pList.filter(p => includeDrafts || p.status === 'published');
+  // Helper to display luxury cloud connection error if Firestore is offline
+  function showCloudLoadError(errMessage) {
+    let errBanner = document.getElementById('cloudErrorBanner');
+    if (!errBanner) {
+      errBanner = document.createElement('div');
+      errBanner.id = 'cloudErrorBanner';
+      errBanner.className = 'cloud-error-banner';
+      errBanner.innerHTML = `
+        <div class="cloud-error-content">
+          <div class="cloud-error-icon">⚠️</div>
+          <h3 class="cloud-error-title">Unable to Connect</h3>
+          <p class="cloud-error-text">Could not load portfolio content from the cloud database. Please verify your connection.</p>
+          <button class="cloud-error-retry-btn" onclick="window.location.reload()">Retry Connection</button>
+        </div>
+      `;
+      document.body.appendChild(errBanner);
     }
-    const items = {};
-    const rawItems = raw.items || {};
-    for (const key of ['skills', 'projects', 'certificates', 'education', 'journey']) {
-      items[key] = (rawItems[key] || []).filter(it => includeDrafts || it.status === 'published');
-    }
-
-    return {
-      home: raw.home || {},
-      sections,
-      pages,
-      items
-    };
   }
 
   // ==========================================================================
@@ -722,35 +716,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 1. Immediately initialize with synchronous local data (0ms delay)
-  // This allows the DOM structure, state model, and all click/arrow handlers to attach instantly.
-  let currentPortfolioData = getSynchronousPortfolioData(isPreviewMode);
+  // State Containers (Pure Cloud Data — No Local Fallbacks)
+  let currentPortfolioData = null;
   let SECTIONS = [];
   let BOOK_SPREADS = [];
   let DESKTOP_SECTION_MAP = {};
   let MOBILE_PAGES = [];
   let MOBILE_SECTION_MAP = {};
-  applyPortfolioData(currentPortfolioData);
 
-  // 2. Load cloud Firestore data asynchronously in background without blocking book interaction
+  // Load pure Cloud Firestore data directly (Single Source of Truth)
   if (window.portfolioService) {
     window.portfolioService.getPublicPortfolioData(isPreviewMode).then(data => {
-      if (!data) return;
+      if (!data) throw new Error('Cloud database returned empty portfolio data.');
       applyPortfolioData(data);
       safeRenderAfterUpdate();
     }).catch(err => {
-      console.warn('Background portfolio sync notice:', err);
+      console.error('Failed to load portfolio from Cloud Firestore:', err);
+      showCloudLoadError(err.message);
     });
+  } else {
+    showCloudLoadError('Portfolio service unavailable.');
   }
 
   // Listen for real-time data changes from Admin
   if (window.portfolioService) {
-    window.portfolioService.on('data:changed', (newData) => {
+    window.portfolioService.on('data:changed', () => {
       const pending = window.portfolioService.getPublicPortfolioData(isPreviewMode);
       if (pending instanceof Promise) {
         pending.then(data => {
+          if (!data) return;
           applyPortfolioData(data);
           safeRenderAfterUpdate();
+        }).catch(err => {
+          console.error('Real-time data update notice:', err);
         });
       }
     });
