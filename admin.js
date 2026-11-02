@@ -2179,12 +2179,12 @@
 
     document.getElementById('btnSaveConfig').addEventListener('click', () => {
       const newConfig = {
-        firebase: {
+        firebase: Object.assign({}, fb, {
           apiKey: document.getElementById('fbApiKey').value.trim(),
           authDomain: document.getElementById('fbAuthDomain').value.trim(),
           projectId: document.getElementById('fbProjectId').value.trim(),
           appId: document.getElementById('fbAppId').value.trim()
-        },
+        }),
         cloudinary: {
           cloudName: document.getElementById('cldCloudName').value.trim(),
           uploadPreset: document.getElementById('cldPreset').value.trim()
@@ -2216,10 +2216,14 @@
         try {
           const res = await window.portfolioService.syncLocalToFirestore();
           if (res.errors && res.errors.length > 0) {
-            console.warn('Firestore sync warnings:', res.errors);
-            showToast(`Synced with warnings: ${res.sections} sections, ${res.pages} pages, ${res.items} items. Check console.`, 'info');
+            console.error('Firestore sync errors:', res.errors);
+            if (res.sections === 0 && res.pages === 0 && res.items === 0 && !res.home) {
+              showToast(`Cloud Sync FAILED: 0 items written. ${res.errors[0]}`, 'error');
+            } else {
+              showToast(`Synced with warnings: ${res.sections} sections, ${res.pages} pages, ${res.items} items. Some failed: ${res.errors[0]}`, 'info');
+            }
           } else {
-            showToast(`Successfully synced to Firestore! (${res.sections} sections, ${res.pages} pages, ${res.items} items)`, 'success');
+            showToast(`Successfully synced to Cloud Firestore! (${res.sections} sections, ${res.pages} pages, ${res.items} items)`, 'success');
           }
         } catch (err) {
           console.error('Sync failed:', err);

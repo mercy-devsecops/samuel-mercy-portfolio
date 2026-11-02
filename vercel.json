@@ -8,7 +8,7 @@
   ],
   "headers": [
     {
-      "source": "/(portfolio-config.js|portfolio-service.js)",
+      "source": "/(portfolio-config.js|portfolio-service.js|admin.js|index.html|admin.html)",
       "headers": [
         {
           "key": "Cache-Control",

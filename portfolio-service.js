@@ -302,8 +302,8 @@
       if (!this.isFirebaseReady || !this.db) {
         throw new Error('Firebase Firestore is not initialized or connected.');
       }
-      if (!this.isAuthenticated()) {
-        throw new Error('Admin authentication required. Please sign in to sync with Firestore.');
+      if (!this.isAuthenticated() || !this.auth || !this.auth.currentUser) {
+        throw new Error('Active Firebase Auth session required. Please sign in with your admin credentials.');
       }
 
       const results = {
