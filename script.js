@@ -647,13 +647,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const items = {};
     const rawItems = raw.items || {};
     for (const key of ['skills', 'projects', 'certificates', 'education', 'journey']) {
-      // For unauthenticated public visitors without a valid cloud cache,
-      // never seed obsolete baseline items that can flash before Firestore responds.
-      if (!_isAdmin) {
-        items[key] = [];
-      } else {
-        items[key] = (rawItems[key] || []).filter(it => includeDrafts || it.status === 'published');
-      }
+      items[key] = (rawItems[key] || []).filter(it => includeDrafts || it.status === 'published');
     }
 
     return {
@@ -687,13 +681,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Sync navigation sidebar buttons with available sections (hides empty/deleted sections like journey)
     const activeSectionIds = new Set(SECTIONS.map(s => s.id));
     activeSectionIds.add('home');
-    navButtons.forEach(btn => {
-      const secId = btn.dataset.sectionId;
-      const li = btn.closest('.nav-li');
-      if (li) {
-        li.style.display = activeSectionIds.has(secId) ? '' : 'none';
-      }
-    });
+    const allNavButtons = document.querySelectorAll('.nav-item-btn');
+    if (allNavButtons && allNavButtons.forEach) {
+      allNavButtons.forEach(btn => {
+        const secId = btn.dataset ? btn.dataset.sectionId : null;
+        const li = btn.closest ? btn.closest('.nav-li') : null;
+        if (li && secId) {
+          li.style.display = activeSectionIds.has(secId) ? '' : 'none';
+        }
+      });
+    }
 
     // Safeguard index boundaries if number of pages changed
     if (BOOK_SPREADS.length > 0 && currentSpreadIndex >= BOOK_SPREADS.length) {
@@ -726,9 +723,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   function loadCloudPortfolio() {
     if (!window.portfolioService) return;
 
-    if (pageFlipperPill && flipperStatusMsg) {
-      pageFlipperPill.style.display = 'flex';
-      flipperStatusMsg.innerHTML = '<span class="flipper-sync-text">Synchronizing portfolio&hellip;</span>';
+    const flipperPill = document.getElementById('pageFlipperPill');
+    const flipperMsg = document.getElementById('flipperStatusMsg');
+
+    if (flipperPill && flipperMsg) {
+      flipperPill.style.display = 'flex';
+      flipperMsg.innerHTML = '<span class="flipper-sync-text">Synchronizing portfolio&hellip;</span>';
     }
 
     window.portfolioService.getPublicPortfolioData(isPreviewMode).then(data => {
@@ -736,14 +736,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       applyPortfolioData(data);
       safeRenderAfterUpdate();
       // If still on closed cover, hide the sync pill
-      if (currentSpreadIndex === 0 && currentMobileIndex === 0 && pageFlipperPill) {
-        pageFlipperPill.style.display = 'none';
+      if (currentSpreadIndex === 0 && currentMobileIndex === 0) {
+        const pill = document.getElementById('pageFlipperPill');
+        if (pill) pill.style.display = 'none';
       }
     }).catch(err => {
       console.warn('Portfolio sync warning:', err);
-      if (pageFlipperPill && flipperStatusMsg) {
-        pageFlipperPill.style.display = 'flex';
-        flipperStatusMsg.innerHTML = '<span style="color:#f28b82;">Connection issue</span> <button id="btnRetrySync" style="background:transparent; border:1px solid #d4af37; color:#d4af37; border-radius:3px; padding:1px 6px; margin-left:6px; cursor:pointer; font-size:11px;">Retry</button>';
+      const pill = document.getElementById('pageFlipperPill');
+      const msg = document.getElementById('flipperStatusMsg');
+      if (pill && msg) {
+        pill.style.display = 'flex';
+        msg.innerHTML = '<span style="color:#f28b82;">Connection issue</span> <button id="btnRetrySync" style="background:transparent; border:1px solid #d4af37; color:#d4af37; border-radius:3px; padding:1px 6px; margin-left:6px; cursor:pointer; font-size:11px;">Retry</button>';
         const btnRetry = document.getElementById('btnRetrySync');
         if (btnRetry) {
           btnRetry.addEventListener('click', (e) => {
